@@ -1,4 +1,4 @@
-import type { AgentFeedOptions, Brief, BriefOptions, ClustersOptions, ClustersResponse, ComparisonResponse, DataOptions, DataResponse, EntitiesOptions, EntitiesResponse, EntityBriefsOptions, FeedOptions, FeedResponse, PolarisClientOptions, SearchOptions, SearchResponse, SimilarOptions, StreamOptions, TrendingOptions } from "./types.js";
+import type { AgentFeedOptions, Brief, BriefOptions, ClustersOptions, ClustersResponse, ComparisonResponse, DataOptions, DataResponse, EntitiesOptions, EntitiesResponse, EntityBriefsOptions, ExtractResponse, FeedOptions, FeedResponse, PolarisClientOptions, SearchOptions, SearchResponse, SimilarOptions, StreamOptions, TrendingOptions } from "./types.js";
 export declare class PolarisClient {
     private apiKey;
     private baseUrl;
@@ -17,6 +17,7 @@ export declare class PolarisClient {
     data(options?: DataOptions): Promise<DataResponse>;
     agentFeed(options?: AgentFeedOptions): Promise<FeedResponse>;
     compareSources(briefId: string): Promise<ComparisonResponse>;
+    extract(urls: string[], includeMetadata?: boolean): Promise<ExtractResponse>;
     trending(options?: TrendingOptions): Promise<Brief[]>;
     stream(options?: StreamOptions): {
         start: (onBrief: (brief: Brief) => void, onError?: (error: Error) => void) => void;

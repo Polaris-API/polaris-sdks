@@ -57,14 +57,47 @@ export interface FeedResponse {
     agentVersion?: string;
     sourcesScanned24h?: number;
 }
+export interface DepthMetadata {
+    depth?: string;
+    searchMs?: number;
+    crossRefMs?: number;
+    verificationMs?: number;
+    totalMs?: number;
+}
+export interface EntityCrossRef {
+    briefId?: string;
+    headline?: string;
+    publishedAt?: string;
+}
+export interface SourceVerification {
+    checked: number;
+    accessible: number;
+    inaccessible: number;
+}
 export interface SearchResponse {
     briefs: Brief[];
     total: number;
-    facets?: Record<string, unknown>;
-    relatedQueries?: string[];
+    facets?: Record<string, unknown> | null;
+    relatedQueries?: string[] | null;
     didYouMean?: string;
     tookMs?: number;
     meta?: Record<string, unknown>;
+    depthMetadata?: DepthMetadata;
+}
+export interface ExtractResult {
+    url: string;
+    title?: string;
+    text?: string;
+    wordCount?: number;
+    language?: string;
+    publishedDate?: string;
+    domain?: string;
+    success: boolean;
+    error?: string;
+}
+export interface ExtractResponse {
+    results: ExtractResult[];
+    creditsUsed: number;
 }
 export interface Cluster {
     clusterId?: string;
@@ -117,6 +150,8 @@ export interface FeedOptions {
     page?: number;
     perPage?: number;
     minConfidence?: number;
+    includeSources?: string;
+    excludeSources?: string;
 }
 export interface BriefOptions {
     includeFullText?: boolean;
@@ -131,6 +166,9 @@ export interface SearchOptions {
     to?: string;
     entity?: string;
     sentiment?: string;
+    depth?: string;
+    includeSources?: string;
+    excludeSources?: string;
 }
 export interface EntitiesOptions {
     q?: string;
@@ -159,6 +197,8 @@ export interface AgentFeedOptions {
     tags?: string;
     limit?: number;
     minConfidence?: number;
+    includeSources?: string;
+    excludeSources?: string;
 }
 export interface TrendingOptions {
     period?: string;

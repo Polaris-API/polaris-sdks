@@ -94,6 +94,7 @@ class PolarisClient {
     async search(query, options = {}) {
         const params = { q: query, ...options };
         const data = await this.request("GET", "/api/v1/search", params);
+        const dm = data.depth_metadata;
         return {
             briefs: (data.briefs || []),
             total: (data.total || 0),
@@ -102,6 +103,13 @@ class PolarisClient {
             didYouMean: data.did_you_mean,
             tookMs: data.took_ms,
             meta: data.meta,
+            depthMetadata: dm ? {
+                depth: dm.depth,
+                searchMs: dm.search_ms,
+                crossRefMs: dm.cross_ref_ms,
+                verificationMs: dm.verification_ms,
+                totalMs: dm.total_ms,
+            } : undefined,
         };
     }
     async generate(topic, category) {
@@ -162,6 +170,26 @@ class PolarisClient {
             sourceAnalyses: data.source_analyses,
             polarisAnalysis: data.polaris_analysis,
             generatedAt: data.generated_at,
+        };
+    }
+    async extract(urls, includeMetadata) {
+        const body = { urls };
+        if (includeMetadata !== undefined)
+            body.include_metadata = includeMetadata;
+        const data = await this.request("POST", "/api/v1/extract", undefined, body);
+        return {
+            results: (data.results || []).map((r) => ({
+                url: r.url,
+                title: r.title,
+                text: r.text,
+                wordCount: r.word_count,
+                language: r.language,
+                publishedDate: r.published_date,
+                domain: r.domain,
+                success: r.success,
+                error: r.error,
+            })),
+            creditsUsed: (data.credits_used || 0),
         };
     }
     async trending(options = {}) {

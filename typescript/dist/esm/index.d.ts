@@ -1,4 +1,4 @@
 export { PolarisClient } from "./client.js";
 export { PolarisError, AuthenticationError, NotFoundError, RateLimitError, APIError, } from "./errors.js";
-export type { Brief, Source, Entity, Provenance, FeedResponse, SearchResponse, Cluster, ClustersResponse, DataPoint, DataPointValue, DataResponse, EntitiesResponse, ComparisonResponse, SourceAnalysis, FeedOptions, BriefOptions, SearchOptions, EntitiesOptions, EntityBriefsOptions, SimilarOptions, ClustersOptions, DataOptions, AgentFeedOptions, TrendingOptions, StreamOptions, PolarisClientOptions, } from "./types.js";
+export type { Brief, Source, Entity, Provenance, FeedResponse, SearchResponse, Cluster, ClustersResponse, DataPoint, DataPointValue, DataResponse, EntitiesResponse, ComparisonResponse, SourceAnalysis, ExtractResult, ExtractResponse, DepthMetadata, EntityCrossRef, SourceVerification, FeedOptions, BriefOptions, SearchOptions, EntitiesOptions, EntityBriefsOptions, SimilarOptions, ClustersOptions, DataOptions, AgentFeedOptions, TrendingOptions, StreamOptions, PolarisClientOptions, } from "./types.js";
 //# sourceMappingURL=index.d.ts.map
