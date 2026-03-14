@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "langchain-polaris"
-version = "0.1.0"
+version = "0.1.1"
 description = "LangChain integration for The Polaris Report — verified news intelligence tools and retriever"
 readme = "README.md"
 license = "MIT"
@@ -28,6 +28,13 @@ dependencies = [
 Homepage = "https://thepolarisreport.com"
 Documentation = "https://thepolarisreport.com/docs"
 Repository = "https://github.com/JohnnyTarrr/polaris-sdks"
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+exclude = ["tests", ".gitignore"]
+
+[tool.hatch.build.targets.wheel.sources]
+"." = "langchain_polaris"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
