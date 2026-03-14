@@ -15,6 +15,7 @@ import type {
   DataOptions,
   DataResponse,
   DepthMetadata,
+  Entity,
   EntitiesOptions,
   EntitiesResponse,
   EntityBriefsOptions,
@@ -23,11 +24,14 @@ import type {
   FeedOptions,
   FeedResponse,
   PolarisClientOptions,
+  Provenance,
   ResearchOptions,
   ResearchResponse,
   SearchOptions,
   SearchResponse,
   SimilarOptions,
+  Source,
+  SourceAnalysis,
   StreamOptions,
   TrendingOptions,
 } from "./types.js";
@@ -46,6 +50,92 @@ function toSnakeParams(params: Record<string, unknown>): Record<string, string> 
     }
   }
   return result;
+}
+
+/* ── Parsers: snake_case API → camelCase SDK ── */
+
+function parseSource(raw: Record<string, unknown>): Source {
+  return {
+    name: (raw.name || "") as string,
+    url: (raw.url || "") as string,
+    trustLevel: raw.trust_level as string | undefined,
+    verified: raw.verified as boolean | undefined,
+  };
+}
+
+function parseEntity(raw: Record<string, unknown>): Entity {
+  return {
+    name: (raw.name || "") as string,
+    type: raw.type as string | undefined,
+    sentiment: raw.sentiment as string | undefined,
+    mentionCount: (raw.mention_count ?? raw.mentions_24h) as number | undefined,
+    ticker: raw.ticker as string | undefined,
+    role: raw.role as string | undefined,
+  };
+}
+
+function parseProvenance(raw: Record<string, unknown>): Provenance {
+  return {
+    reviewStatus: raw.review_status as string | undefined,
+    aiContributionPct: raw.ai_contribution_pct as number | undefined,
+    humanContributionPct: raw.human_contribution_pct as number | undefined,
+    confidenceScore: raw.confidence_score as number | undefined,
+    biasScore: raw.bias_score as number | undefined,
+    agentsInvolved: raw.agents_involved as string[] | undefined,
+  };
+}
+
+function parseBrief(raw: Record<string, unknown>): Brief {
+  const prov = raw.provenance
+    ? parseProvenance(raw.provenance as Record<string, unknown>)
+    : undefined;
+
+  return {
+    id: raw.id as string | undefined,
+    headline: (raw.headline || "") as string,
+    summary: raw.summary as string | undefined,
+    body: raw.body as string | undefined,
+    confidence: (raw.confidence as number | undefined) ?? prov?.confidenceScore,
+    biasScore: (raw.bias_score as number | undefined) ?? prov?.biasScore,
+    sentiment: raw.sentiment as string | undefined,
+    counterArgument: raw.counter_argument as string | undefined,
+    category: raw.category as string | undefined,
+    tags: raw.tags as string[] | undefined,
+    sources: raw.sources
+      ? (raw.sources as Record<string, unknown>[]).map(parseSource)
+      : undefined,
+    entitiesEnriched: raw.entities_enriched
+      ? (raw.entities_enriched as Record<string, unknown>[]).map(parseEntity)
+      : undefined,
+    structuredData: raw.structured_data as Record<string, unknown> | undefined,
+    publishedAt: raw.published_at as string | undefined,
+    reviewStatus: raw.review_status as string | undefined,
+    provenance: prov,
+    briefType: raw.brief_type as string | undefined,
+    trending: raw.trending as boolean | undefined,
+    topics: raw.topics as string[] | undefined,
+    entities: raw.entities as string[] | undefined,
+    impactScore: raw.impact_score as number | undefined,
+    readTimeSeconds: raw.read_time_seconds as number | undefined,
+    sourceCount: raw.source_count as number | undefined,
+    correctionsCount: raw.corrections_count as number | undefined,
+    biasAnalysis: raw.bias_analysis as Record<string, unknown> | undefined,
+    fullSources: raw.full_sources as Record<string, unknown>[] | undefined,
+  };
+}
+
+function parseSourceAnalysis(raw: Record<string, unknown>): SourceAnalysis {
+  return {
+    outlet: raw.outlet as string | undefined,
+    headline: raw.headline as string | undefined,
+    framing: raw.framing as string | undefined,
+    politicalLean: raw.political_lean as string | undefined,
+    loadedLanguage: raw.loaded_language as string[] | undefined,
+    emphasis: raw.emphasis as string[] | undefined,
+    omissions: raw.omissions as string[] | undefined,
+    sentiment: raw.sentiment as Record<string, string> | undefined,
+    rawExcerpt: raw.raw_excerpt as string | undefined,
+  };
 }
 
 export class PolarisClient {
@@ -116,7 +206,7 @@ export class PolarisClient {
     }
     const data = await this.request<Record<string, unknown>>("GET", "/api/v1/feed", params);
     return {
-      briefs: (data.briefs || []) as Brief[],
+      briefs: ((data.briefs || []) as Record<string, unknown>[]).map(parseBrief),
       total: (data.total || 0) as number,
       page: (data.page || 1) as number,
       perPage: (data.per_page || 20) as number,
@@ -132,7 +222,7 @@ export class PolarisClient {
       params.includeFullText = options.includeFullText;
     }
     const data = await this.request<Record<string, unknown>>("GET", `/api/v1/brief/${id}`, params);
-    return (data.brief || data) as Brief;
+    return parseBrief((data.brief || data) as Record<string, unknown>);
   }
 
   async search(query: string, options: SearchOptions = {}): Promise<SearchResponse> {
@@ -140,7 +230,7 @@ export class PolarisClient {
     const data = await this.request<Record<string, unknown>>("GET", "/api/v1/search", params);
     const dm = data.depth_metadata as Record<string, unknown> | undefined;
     return {
-      briefs: (data.briefs || []) as Brief[],
+      briefs: ((data.briefs || []) as Record<string, unknown>[]).map(parseBrief),
       total: (data.total || 0) as number,
       facets: data.facets as Record<string, unknown> | null | undefined,
       relatedQueries: data.related_queries as string[] | null | undefined,
@@ -161,29 +251,33 @@ export class PolarisClient {
     const body: Record<string, string> = { topic };
     if (category) body.category = category;
     const data = await this.request<Record<string, unknown>>("POST", "/api/v1/generate/brief", undefined, body);
-    return (data.brief || data) as Brief;
+    return parseBrief((data.brief || data) as Record<string, unknown>);
   }
 
   async entities(options: EntitiesOptions = {}): Promise<EntitiesResponse> {
     const data = await this.request<Record<string, unknown>>("GET", "/api/v1/entities", options as Record<string, unknown>);
-    return { entities: (data.entities || []) as Brief[] } as unknown as EntitiesResponse;
+    return {
+      entities: ((data.entities || []) as Record<string, unknown>[]).map(parseEntity),
+    };
   }
 
   async entityBriefs(name: string, options: EntityBriefsOptions = {}): Promise<Brief[]> {
     const data = await this.request<Record<string, unknown>>("GET", `/api/v1/entities/${encodeURIComponent(name)}/briefs`, options as Record<string, unknown>);
-    return (data.briefs || []) as Brief[];
+    return ((data.briefs || []) as Record<string, unknown>[]).map(parseBrief);
   }
 
   async trendingEntities(limit?: number): Promise<EntitiesResponse> {
     const params: Record<string, unknown> = {};
     if (limit !== undefined) params.limit = limit;
     const data = await this.request<Record<string, unknown>>("GET", "/api/v1/entities/trending", params);
-    return { entities: (data.entities || []) as Brief[] } as unknown as EntitiesResponse;
+    return {
+      entities: ((data.entities || []) as Record<string, unknown>[]).map(parseEntity),
+    };
   }
 
   async similar(id: string, options: SimilarOptions = {}): Promise<Brief[]> {
     const data = await this.request<Record<string, unknown>>("GET", `/api/v1/similar/${id}`, options as Record<string, unknown>);
-    return (data.briefs || []) as Brief[];
+    return ((data.briefs || []) as Record<string, unknown>[]).map(parseBrief);
   }
 
   async clusters(options: ClustersOptions = {}): Promise<ClustersResponse> {
@@ -202,7 +296,7 @@ export class PolarisClient {
   async agentFeed(options: AgentFeedOptions = {}): Promise<FeedResponse> {
     const data = await this.request<Record<string, unknown>>("GET", "/api/v1/agent-feed", options as Record<string, unknown>);
     return {
-      briefs: (data.briefs || []) as Brief[],
+      briefs: ((data.briefs || []) as Record<string, unknown>[]).map(parseBrief),
       total: (data.total || 0) as number,
       page: (data.page || 1) as number,
       perPage: (data.per_page || 20) as number,
@@ -214,12 +308,14 @@ export class PolarisClient {
 
   async compareSources(briefId: string): Promise<ComparisonResponse> {
     const data = await this.request<Record<string, unknown>>("GET", "/api/v1/compare/sources", { briefId });
+    const rawBrief = data.polaris_brief as Record<string, unknown> | undefined;
+    const rawAnalyses = data.source_analyses as Record<string, unknown>[] | undefined;
     return {
       topic: data.topic as string | undefined,
       shareId: data.share_id as string | undefined,
-      polarisBrief: data.polaris_brief as Brief | undefined,
-      sourceAnalyses: data.source_analyses as ComparisonResponse["sourceAnalyses"],
-      polarisAnalysis: data.polaris_analysis as string | undefined,
+      polarisBrief: rawBrief ? parseBrief(rawBrief) : undefined,
+      sourceAnalyses: rawAnalyses ? rawAnalyses.map(parseSourceAnalysis) : undefined,
+      polarisAnalysis: data.polaris_analysis as Record<string, unknown> | undefined,
       generatedAt: data.generated_at as string | undefined,
     };
   }
@@ -288,7 +384,7 @@ export class PolarisClient {
 
   async trending(options: TrendingOptions = {}): Promise<Brief[]> {
     const data = await this.request<Record<string, unknown>>("GET", "/api/v1/trending", options as Record<string, unknown>);
-    return (data.briefs || []) as Brief[];
+    return ((data.briefs || []) as Record<string, unknown>[]).map(parseBrief);
   }
 
   stream(options: StreamOptions = {}): { start: (onBrief: (brief: Brief) => void, onError?: (error: Error) => void) => void; stop: () => void } {
@@ -331,7 +427,7 @@ export class PolarisClient {
                   if (payload && payload !== "[DONE]") {
                     try {
                       const data = JSON.parse(payload);
-                      onBrief(data as Brief);
+                      onBrief(parseBrief(data));
                     } catch {
                       // skip malformed JSON
                     }

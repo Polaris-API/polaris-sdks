@@ -130,18 +130,22 @@ export interface EntitiesResponse {
     entities: Entity[];
 }
 export interface SourceAnalysis {
-    source?: string;
-    url?: string;
-    summary?: string;
-    bias?: string;
-    trustLevel?: string;
+    outlet?: string;
+    headline?: string;
+    framing?: string;
+    politicalLean?: string;
+    loadedLanguage?: string[];
+    emphasis?: string[];
+    omissions?: string[];
+    sentiment?: Record<string, string>;
+    rawExcerpt?: string;
 }
 export interface ComparisonResponse {
     topic?: string;
     shareId?: string;
     polarisBrief?: Brief;
     sourceAnalyses?: SourceAnalysis[];
-    polarisAnalysis?: string;
+    polarisAnalysis?: Record<string, unknown>;
     generatedAt?: string;
 }
 export interface FeedOptions {
@@ -206,6 +210,46 @@ export interface TrendingOptions {
 }
 export interface StreamOptions {
     categories?: string;
+}
+export interface ResearchOptions {
+    maxSources?: number;
+    depth?: string;
+    category?: string;
+    includeSources?: string;
+    excludeSources?: string;
+    outputSchema?: Record<string, unknown>;
+}
+export interface ResearchSourceUsed {
+    briefId?: string;
+    headline?: string;
+    confidence?: number;
+    category?: string;
+}
+export interface ResearchEntityCooccurrence {
+    entity?: string;
+    count?: number;
+}
+export interface ResearchEntity {
+    name?: string;
+    type?: string;
+    mentions?: number;
+    coOccursWith?: ResearchEntityCooccurrence[];
+}
+export interface ResearchMetadata {
+    briefsAnalyzed: number;
+    uniqueSources: number;
+    processingTimeMs?: number;
+    modelsUsed?: string[];
+}
+export interface ResearchResponse {
+    query: string;
+    report?: Record<string, unknown>;
+    sourcesUsed?: ResearchSourceUsed[];
+    entityMap?: ResearchEntity[];
+    subQueries?: string[];
+    metadata?: ResearchMetadata;
+    structuredOutput?: unknown;
+    structuredOutputError?: string;
 }
 export interface PolarisClientOptions {
     apiKey?: string;

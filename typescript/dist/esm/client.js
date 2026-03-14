@@ -12,6 +12,85 @@ function toSnakeParams(params) {
     }
     return result;
 }
+/* ── Parsers: snake_case API → camelCase SDK ── */
+function parseSource(raw) {
+    return {
+        name: (raw.name || ""),
+        url: (raw.url || ""),
+        trustLevel: raw.trust_level,
+        verified: raw.verified,
+    };
+}
+function parseEntity(raw) {
+    return {
+        name: (raw.name || ""),
+        type: raw.type,
+        sentiment: raw.sentiment,
+        mentionCount: (raw.mention_count ?? raw.mentions_24h),
+        ticker: raw.ticker,
+        role: raw.role,
+    };
+}
+function parseProvenance(raw) {
+    return {
+        reviewStatus: raw.review_status,
+        aiContributionPct: raw.ai_contribution_pct,
+        humanContributionPct: raw.human_contribution_pct,
+        confidenceScore: raw.confidence_score,
+        biasScore: raw.bias_score,
+        agentsInvolved: raw.agents_involved,
+    };
+}
+function parseBrief(raw) {
+    const prov = raw.provenance
+        ? parseProvenance(raw.provenance)
+        : undefined;
+    return {
+        id: raw.id,
+        headline: (raw.headline || ""),
+        summary: raw.summary,
+        body: raw.body,
+        confidence: raw.confidence ?? prov?.confidenceScore,
+        biasScore: raw.bias_score ?? prov?.biasScore,
+        sentiment: raw.sentiment,
+        counterArgument: raw.counter_argument,
+        category: raw.category,
+        tags: raw.tags,
+        sources: raw.sources
+            ? raw.sources.map(parseSource)
+            : undefined,
+        entitiesEnriched: raw.entities_enriched
+            ? raw.entities_enriched.map(parseEntity)
+            : undefined,
+        structuredData: raw.structured_data,
+        publishedAt: raw.published_at,
+        reviewStatus: raw.review_status,
+        provenance: prov,
+        briefType: raw.brief_type,
+        trending: raw.trending,
+        topics: raw.topics,
+        entities: raw.entities,
+        impactScore: raw.impact_score,
+        readTimeSeconds: raw.read_time_seconds,
+        sourceCount: raw.source_count,
+        correctionsCount: raw.corrections_count,
+        biasAnalysis: raw.bias_analysis,
+        fullSources: raw.full_sources,
+    };
+}
+function parseSourceAnalysis(raw) {
+    return {
+        outlet: raw.outlet,
+        headline: raw.headline,
+        framing: raw.framing,
+        politicalLean: raw.political_lean,
+        loadedLanguage: raw.loaded_language,
+        emphasis: raw.emphasis,
+        omissions: raw.omissions,
+        sentiment: raw.sentiment,
+        rawExcerpt: raw.raw_excerpt,
+    };
+}
 export class PolarisClient {
     constructor(options = {}) {
         this.apiKey = options.apiKey;
@@ -71,7 +150,7 @@ export class PolarisClient {
         }
         const data = await this.request("GET", "/api/v1/feed", params);
         return {
-            briefs: (data.briefs || []),
+            briefs: (data.briefs || []).map(parseBrief),
             total: (data.total || 0),
             page: (data.page || 1),
             perPage: (data.per_page || 20),
@@ -86,14 +165,14 @@ export class PolarisClient {
             params.includeFullText = options.includeFullText;
         }
         const data = await this.request("GET", `/api/v1/brief/${id}`, params);
-        return (data.brief || data);
+        return parseBrief((data.brief || data));
     }
     async search(query, options = {}) {
         const params = { q: query, ...options };
         const data = await this.request("GET", "/api/v1/search", params);
         const dm = data.depth_metadata;
         return {
-            briefs: (data.briefs || []),
+            briefs: (data.briefs || []).map(parseBrief),
             total: (data.total || 0),
             facets: data.facets,
             relatedQueries: data.related_queries,
@@ -114,26 +193,30 @@ export class PolarisClient {
         if (category)
             body.category = category;
         const data = await this.request("POST", "/api/v1/generate/brief", undefined, body);
-        return (data.brief || data);
+        return parseBrief((data.brief || data));
     }
     async entities(options = {}) {
         const data = await this.request("GET", "/api/v1/entities", options);
-        return { entities: (data.entities || []) };
+        return {
+            entities: (data.entities || []).map(parseEntity),
+        };
     }
     async entityBriefs(name, options = {}) {
         const data = await this.request("GET", `/api/v1/entities/${encodeURIComponent(name)}/briefs`, options);
-        return (data.briefs || []);
+        return (data.briefs || []).map(parseBrief);
     }
     async trendingEntities(limit) {
         const params = {};
         if (limit !== undefined)
             params.limit = limit;
         const data = await this.request("GET", "/api/v1/entities/trending", params);
-        return { entities: (data.entities || []) };
+        return {
+            entities: (data.entities || []).map(parseEntity),
+        };
     }
     async similar(id, options = {}) {
         const data = await this.request("GET", `/api/v1/similar/${id}`, options);
-        return (data.briefs || []);
+        return (data.briefs || []).map(parseBrief);
     }
     async clusters(options = {}) {
         const data = await this.request("GET", "/api/v1/clusters", options);
@@ -149,7 +232,7 @@ export class PolarisClient {
     async agentFeed(options = {}) {
         const data = await this.request("GET", "/api/v1/agent-feed", options);
         return {
-            briefs: (data.briefs || []),
+            briefs: (data.briefs || []).map(parseBrief),
             total: (data.total || 0),
             page: (data.page || 1),
             perPage: (data.per_page || 20),
@@ -160,13 +243,62 @@ export class PolarisClient {
     }
     async compareSources(briefId) {
         const data = await this.request("GET", "/api/v1/compare/sources", { briefId });
+        const rawBrief = data.polaris_brief;
+        const rawAnalyses = data.source_analyses;
         return {
             topic: data.topic,
             shareId: data.share_id,
-            polarisBrief: data.polaris_brief,
-            sourceAnalyses: data.source_analyses,
+            polarisBrief: rawBrief ? parseBrief(rawBrief) : undefined,
+            sourceAnalyses: rawAnalyses ? rawAnalyses.map(parseSourceAnalysis) : undefined,
             polarisAnalysis: data.polaris_analysis,
             generatedAt: data.generated_at,
+        };
+    }
+    async research(query, options = {}) {
+        const body = { query };
+        if (options.maxSources !== undefined)
+            body.max_sources = options.maxSources;
+        if (options.depth !== undefined)
+            body.depth = options.depth;
+        if (options.category !== undefined)
+            body.category = options.category;
+        if (options.includeSources !== undefined)
+            body.include_sources = options.includeSources;
+        if (options.excludeSources !== undefined)
+            body.exclude_sources = options.excludeSources;
+        if (options.outputSchema !== undefined)
+            body.output_schema = options.outputSchema;
+        const data = await this.request("POST", "/api/v1/research", undefined, body);
+        const sourcesUsed = (data.sources_used || []).map((s) => ({
+            briefId: s.brief_id,
+            headline: s.headline,
+            confidence: s.confidence,
+            category: s.category,
+        }));
+        const entityMap = (data.entity_map || []).map((e) => ({
+            name: e.name,
+            type: e.type,
+            mentions: e.mentions,
+            coOccursWith: (e.co_occurs_with || []).map((c) => ({
+                entity: c.entity,
+                count: c.count,
+            })),
+        }));
+        const meta = data.metadata;
+        return {
+            query: data.query,
+            report: data.report,
+            sourcesUsed,
+            entityMap,
+            subQueries: data.sub_queries,
+            metadata: meta ? {
+                briefsAnalyzed: (meta.briefs_analyzed || 0),
+                uniqueSources: (meta.unique_sources || 0),
+                processingTimeMs: meta.processing_time_ms,
+                modelsUsed: meta.models_used,
+            } : undefined,
+            structuredOutput: data.structured_output,
+            structuredOutputError: data.structured_output_error,
         };
     }
     async extract(urls, includeMetadata) {
@@ -191,7 +323,7 @@ export class PolarisClient {
     }
     async trending(options = {}) {
         const data = await this.request("GET", "/api/v1/trending", options);
-        return (data.briefs || []);
+        return (data.briefs || []).map(parseBrief);
     }
     stream(options = {}) {
         let controller = null;
@@ -232,7 +364,7 @@ export class PolarisClient {
                                 if (payload && payload !== "[DONE]") {
                                     try {
                                         const data = JSON.parse(payload);
-                                        onBrief(data);
+                                        onBrief(parseBrief(data));
                                     }
                                     catch {
                                         // skip malformed JSON

@@ -147,11 +147,15 @@ export interface EntitiesResponse {
 }
 
 export interface SourceAnalysis {
-  source?: string;
-  url?: string;
-  summary?: string;
-  bias?: string;
-  trustLevel?: string;
+  outlet?: string;
+  headline?: string;
+  framing?: string;
+  politicalLean?: string;
+  loadedLanguage?: string[];
+  emphasis?: string[];
+  omissions?: string[];
+  sentiment?: Record<string, string>;
+  rawExcerpt?: string;
 }
 
 export interface ComparisonResponse {
@@ -159,7 +163,7 @@ export interface ComparisonResponse {
   shareId?: string;
   polarisBrief?: Brief;
   sourceAnalyses?: SourceAnalysis[];
-  polarisAnalysis?: string;
+  polarisAnalysis?: Record<string, unknown>;
   generatedAt?: string;
 }
 

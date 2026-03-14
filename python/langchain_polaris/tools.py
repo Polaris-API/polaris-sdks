@@ -224,9 +224,10 @@ class PolarisCompareTool(BaseTool):
         lines = ["Topic: {}".format(comparison.topic or topic)]
         if comparison.source_analyses:
             for sa in comparison.source_analyses:
-                lines.append("- {} (bias: {})".format(sa.source or sa.url, sa.bias or "N/A"))
-                if sa.summary:
-                    lines.append("  {}".format(sa.summary[:200]))
+                lines.append("- {} ({})".format(sa.outlet or "Unknown", sa.political_lean or "N/A"))
+                if sa.framing:
+                    lines.append("  {}".format(sa.framing[:200]))
         if comparison.polaris_analysis:
-            lines.append("Synthesis: {}".format(comparison.polaris_analysis[:500]))
+            summary = comparison.polaris_analysis.get("summary", "") if isinstance(comparison.polaris_analysis, dict) else str(comparison.polaris_analysis)
+            lines.append("Synthesis: {}".format(summary[:500]))
         return "\n".join(lines)
