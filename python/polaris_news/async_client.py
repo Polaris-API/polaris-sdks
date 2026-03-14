@@ -2,6 +2,7 @@ import json
 
 import httpx
 
+from .client import _read_credentials
 from .exceptions import APIError, AuthenticationError, NotFoundError, PolarisError, RateLimitError
 from .types import (
     Brief,
@@ -28,7 +29,7 @@ class AsyncPolarisClient:
     DEFAULT_BASE_URL = "https://api.thepolarisreport.com"
 
     def __init__(self, api_key=None, base_url=None):
-        self.api_key = api_key
+        self.api_key = api_key or _read_credentials()
         self.base_url = (base_url or self.DEFAULT_BASE_URL).rstrip("/")
         headers = {}
         if self.api_key:
