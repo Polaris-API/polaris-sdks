@@ -10,14 +10,26 @@ pip install polaris-news
 
 ## Quick Start
 
+### Authenticate via CLI
+
+```bash
+polaris login    # opens GitHub in your browser — API key saved automatically
+polaris whoami   # check your auth status
+polaris logout   # remove saved credentials
+```
+
+### Use the client
+
 ```python
 from polaris_news import PolarisClient
 
-client = PolarisClient(api_key="your-api-key")
+client = PolarisClient()  # auto-reads saved credentials
 feed = client.feed(category="technology", limit=10)
 for brief in feed.briefs:
     print(brief.headline)
 ```
+
+You can also pass a key explicitly or set the `POLARIS_API_KEY` environment variable.
 
 ## Methods
 
@@ -43,7 +55,7 @@ for brief in feed.briefs:
 ```python
 from polaris_news import PolarisClient, AuthenticationError, RateLimitError, NotFoundError
 
-client = PolarisClient(api_key="your-api-key")
+client = PolarisClient()
 
 try:
     brief = client.brief("abc123")
@@ -58,7 +70,7 @@ except RateLimitError as e:
 ## Streaming
 
 ```python
-client = PolarisClient(api_key="your-api-key")
+client = PolarisClient()
 
 for brief in client.stream(categories="technology,science"):
     print(f"[{brief.category}] {brief.headline}")

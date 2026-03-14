@@ -19,9 +19,9 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_polaris import PolarisSearchTool, PolarisBriefTool, PolarisCompareTool
 
 tools = [
-    PolarisSearchTool(api_key="your-api-key"),
-    PolarisBriefTool(api_key="your-api-key"),
-    PolarisCompareTool(api_key="your-api-key"),
+    PolarisSearchTool(api_key="pr_live_xxx"),
+    PolarisBriefTool(api_key="pr_live_xxx"),
+    PolarisCompareTool(api_key="pr_live_xxx"),
 ]
 
 prompt = ChatPromptTemplate.from_messages([
@@ -48,7 +48,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_polaris import PolarisRetriever
 
 retriever = PolarisRetriever(
-    api_key="your-api-key",
+    api_key="pr_live_xxx",
     category="ai_ml",
     min_confidence=0.7,
     limit=5,
@@ -90,7 +90,7 @@ print(chain.invoke("What are the latest developments in AI?"))
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `api_key` | str | required | Polaris API key |
+| `api_key` | str | None | Polaris API key (auto-reads from `POLARIS_API_KEY` env var or `~/.polaris/credentials` if omitted) |
 | `category` | str | None | Category filter |
 | `min_confidence` | float | None | Minimum confidence score (0-1) |
 | `limit` | int | 10 | Max results to return |

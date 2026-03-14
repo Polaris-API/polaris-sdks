@@ -11,12 +11,19 @@ Official Python and TypeScript SDKs for [The Polaris Report](https://thepolarisr
 
 ## Quick Start
 
+### Authenticate via CLI
+
+```bash
+pip install polaris-news   # or: npm install polaris-news-api
+polaris login              # opens GitHub — API key saved to ~/.polaris/credentials
+```
+
 ### Python
 
 ```python
 from polaris_news import PolarisClient
 
-client = PolarisClient(api_key="your-api-key")
+client = PolarisClient()  # auto-reads saved credentials
 feed = client.feed(category="technology", limit=10)
 for brief in feed.briefs:
     print(brief.headline)
@@ -27,10 +34,17 @@ for brief in feed.briefs:
 ```typescript
 import { PolarisClient } from "polaris-news-api";
 
-const client = new PolarisClient({ apiKey: "your-api-key" });
+const client = new PolarisClient();  // auto-reads saved credentials
 const feed = await client.feed({ category: "technology", limit: 10 });
 feed.briefs.forEach((brief) => console.log(brief.headline));
 ```
+
+### API Key Resolution
+
+Both SDKs resolve the API key in this order:
+1. Explicit parameter (`api_key=` / `apiKey:`)
+2. `POLARIS_API_KEY` environment variable
+3. `~/.polaris/credentials` file (written by `polaris login`)
 
 ## Documentation
 

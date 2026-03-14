@@ -10,13 +10,25 @@ npm install polaris-news-api
 
 ## Quick Start
 
+### Authenticate via CLI
+
+```bash
+polaris login    # opens GitHub in your browser — API key saved automatically
+polaris whoami   # check your auth status
+polaris logout   # remove saved credentials
+```
+
+### Use the client
+
 ```typescript
 import { PolarisClient } from "polaris-news-api";
 
-const client = new PolarisClient({ apiKey: "your-api-key" });
+const client = new PolarisClient();  // auto-reads saved credentials
 const feed = await client.feed({ category: "technology", limit: 10 });
 feed.briefs.forEach((brief) => console.log(brief.headline));
 ```
+
+You can also pass a key explicitly or set the `POLARIS_API_KEY` environment variable.
 
 ## Methods
 
@@ -42,7 +54,7 @@ feed.briefs.forEach((brief) => console.log(brief.headline));
 ```typescript
 import { PolarisClient, AuthenticationError, RateLimitError, NotFoundError } from "polaris-news-api";
 
-const client = new PolarisClient({ apiKey: "your-api-key" });
+const client = new PolarisClient();
 
 try {
   const brief = await client.brief("abc123");
@@ -60,7 +72,7 @@ try {
 ## Streaming
 
 ```typescript
-const client = new PolarisClient({ apiKey: "your-api-key" });
+const client = new PolarisClient();
 
 const stream = client.stream({ categories: "technology,science" });
 stream.start(
