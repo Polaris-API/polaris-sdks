@@ -169,11 +169,15 @@ class EntitiesResponse:
 
 @dataclass
 class SourceAnalysis:
-    source: Optional[str] = None
-    url: Optional[str] = None
-    summary: Optional[str] = None
-    bias: Optional[str] = None
-    trust_level: Optional[str] = None
+    outlet: Optional[str] = None
+    headline: Optional[str] = None
+    framing: Optional[str] = None
+    political_lean: Optional[str] = None
+    loaded_language: Optional[List[str]] = None
+    emphasis: Optional[List[str]] = None
+    omissions: Optional[List[str]] = None
+    sentiment: Optional[Dict[str, str]] = None
+    raw_excerpt: Optional[str] = None
 
 
 @dataclass
@@ -182,7 +186,7 @@ class ComparisonResponse:
     share_id: Optional[str] = None
     polaris_brief: Optional[Brief] = None
     source_analyses: Optional[List[SourceAnalysis]] = None
-    polaris_analysis: Optional[str] = None
+    polaris_analysis: Optional[Dict[str, Any]] = None
     generated_at: Optional[str] = None
 
 
@@ -278,7 +282,11 @@ def _parse_source(data):
 
 def _parse_entity(data):
     if isinstance(data, dict):
-        return Entity(**{k: v for k, v in data.items() if k in Entity.__dataclass_fields__})
+        mapped = {k: v for k, v in data.items() if k in Entity.__dataclass_fields__}
+        # API returns mentions_24h; map to mention_count
+        if "mention_count" not in mapped and "mentions_24h" in data:
+            mapped["mention_count"] = data["mentions_24h"]
+        return Entity(**mapped)
     return Entity()
 
 
@@ -303,7 +311,14 @@ def _parse_brief(data):
             fields[k] = _parse_provenance(v)
         else:
             fields[k] = v
-    return Brief(**fields)
+    brief = Brief(**fields)
+    # Auto-populate convenience fields from provenance
+    if brief.provenance:
+        if brief.confidence is None and brief.provenance.confidence_score is not None:
+            brief.confidence = brief.provenance.confidence_score
+        if brief.bias_score is None and brief.provenance.bias_score is not None:
+            brief.bias_score = brief.provenance.bias_score
+    return brief
 
 
 def _parse_data_point_value(data):
@@ -342,7 +357,8 @@ def _parse_cluster(data):
 
 def _parse_source_analysis(data):
     if isinstance(data, dict):
-        return SourceAnalysis(**{k: v for k, v in data.items() if k in SourceAnalysis.__dataclass_fields__})
+        mapped = {k: v for k, v in data.items() if k in SourceAnalysis.__dataclass_fields__}
+        return SourceAnalysis(**mapped)
     return SourceAnalysis()
 
 
