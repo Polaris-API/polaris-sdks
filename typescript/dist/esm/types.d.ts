@@ -251,6 +251,30 @@ export interface ResearchResponse {
     structuredOutput?: unknown;
     structuredOutputError?: string;
 }
+export interface VerifyOptions {
+    context?: string;
+}
+export interface VerifyBrief {
+    id: string;
+    headline: string;
+    confidence: number;
+    relevance: number | null;
+}
+export interface VerifyResponse {
+    claim: string;
+    verdict: "supported" | "contradicted" | "partially_supported" | "unverifiable";
+    confidence: number;
+    summary: string;
+    supportingBriefs: VerifyBrief[];
+    contradictingBriefs: VerifyBrief[];
+    nuances: string | null;
+    sourcesAnalyzed: number;
+    briefsMatched: number;
+    creditsUsed: number;
+    cached: boolean;
+    processingTimeMs: number;
+    modelUsed: string | null;
+}
 export interface PolarisClientOptions {
     apiKey?: string;
     baseUrl?: string;

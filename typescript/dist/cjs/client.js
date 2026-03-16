@@ -339,6 +339,33 @@ class PolarisClient {
             creditsUsed: (data.credits_used || 0),
         };
     }
+    async verify(claim, options = {}) {
+        const body = { claim };
+        if (options.context !== undefined)
+            body.context = options.context;
+        const data = await this.request("POST", "/api/v1/verify", undefined, body);
+        const mapBrief = (b) => ({
+            id: b.id,
+            headline: b.headline,
+            confidence: b.confidence,
+            relevance: (b.relevance ?? null),
+        });
+        return {
+            claim: data.claim,
+            verdict: data.verdict,
+            confidence: (data.confidence || 0),
+            summary: (data.summary || ""),
+            supportingBriefs: (data.supporting_briefs || []).map(mapBrief),
+            contradictingBriefs: (data.contradicting_briefs || []).map(mapBrief),
+            nuances: (data.nuances ?? null),
+            sourcesAnalyzed: (data.sources_analyzed || 0),
+            briefsMatched: (data.briefs_matched || 0),
+            creditsUsed: (data.credits_used || 0),
+            cached: (data.cached || false),
+            processingTimeMs: (data.processing_time_ms || 0),
+            modelUsed: (data.model_used ?? null),
+        };
+    }
     async trending(options = {}) {
         const data = await this.request("GET", "/api/v1/trending", options);
         return (data.briefs || []).map(parseBrief);
