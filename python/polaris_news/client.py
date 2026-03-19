@@ -119,6 +119,10 @@ class PolarisClient:
         data = self._request("GET", "/api/v1/brief/{}".format(brief_id), params=params)
         return _parse_brief(data.get("brief", data))
 
+    def timeline(self, brief_id: str) -> dict:
+        """Get the story evolution timeline for a living brief."""
+        return self._request("GET", "/api/v1/brief/{}/timeline".format(brief_id))
+
     def search(self, query, category=None, page=None, per_page=None, sort=None,
                min_confidence=None, from_date=None, to_date=None, entity=None, sentiment=None,
                depth=None, include_sources=None, exclude_sources=None):

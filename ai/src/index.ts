@@ -7,3 +7,4 @@ export { polarisTrending } from "./tools/polaris-trending.js";
 export { polarisCompare } from "./tools/polaris-compare.js";
 export { polarisResearch } from "./tools/polaris-research.js";
 export { polarisVerify } from "./tools/polaris-verify.js";
+export { polarisTimeline } from "./tools/polaris-timeline.js";

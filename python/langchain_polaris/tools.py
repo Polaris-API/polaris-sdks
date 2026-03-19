@@ -121,6 +121,28 @@ class PolarisBriefTool(BaseTool):
         return "\n".join(parts)
 
 
+class TimelineInput(BaseModel):
+    brief_id: str = Field(description="Brief ID to get the story evolution timeline for")
+
+
+class PolarisTimelineTool(BaseTool):
+    name: str = "polaris_timeline"
+    description: str = "Get the story evolution timeline for a living brief, showing how it developed over time with versioned updates."
+    args_schema: Type[BaseModel] = TimelineInput
+    api_key: str = ""
+
+    def __init__(self, api_key: str, **kwargs):
+        super().__init__(api_key=api_key, **kwargs)
+
+    def _run(self, brief_id: str) -> str:
+        client = PolarisClient(api_key=self.api_key)
+        result = client.timeline(brief_id)
+        if not result:
+            return "No timeline found for brief '{}'.".format(brief_id)
+        import json
+        return json.dumps(result, indent=2, default=str)
+
+
 class ExtractInput(BaseModel):
     urls: str = Field(description="Comma-separated URLs to extract article content from")
 

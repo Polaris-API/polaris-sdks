@@ -6,6 +6,7 @@ from .tools import (
     PolarisFeedTool,
     PolarisResearchTool,
     PolarisSearchTool,
+    PolarisTimelineTool,
     PolarisTrendingTool,
     PolarisVerifyTool,
 )
@@ -16,6 +17,7 @@ __all__ = [
     "PolarisFeedTool",
     "PolarisEntityTool",
     "PolarisBriefTool",
+    "PolarisTimelineTool",
     "PolarisExtractTool",
     "PolarisResearchTool",
     "PolarisCompareTool",

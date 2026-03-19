@@ -242,6 +242,10 @@ export class PolarisClient {
     return parseBrief((data.brief || data) as Record<string, unknown>);
   }
 
+  async timeline(id: string): Promise<Record<string, unknown>> {
+    return this.request<Record<string, unknown>>("GET", `/api/v1/brief/${id}/timeline`);
+  }
+
   async search(query: string, options: SearchOptions = {}): Promise<SearchResponse> {
     const params: Record<string, unknown> = { q: query, ...options };
     const data = await this.request<Record<string, unknown>>("GET", "/api/v1/search", params);
