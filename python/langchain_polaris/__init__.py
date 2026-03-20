@@ -2,6 +2,7 @@ from .tools import (
     PolarisBriefTool,
     PolarisCompareTool,
     PolarisContradictionsTool,
+    PolarisCrawlTool,
     PolarisEntityTool,
     PolarisEventsTool,
     PolarisExtractTool,
@@ -12,6 +13,7 @@ from .tools import (
     PolarisTimelineTool,
     PolarisTrendingTool,
     PolarisVerifyTool,
+    PolarisWebSearchTool,
 )
 from .retrievers import PolarisRetriever
 
@@ -29,5 +31,7 @@ __all__ = [
     "PolarisForecastTool",
     "PolarisContradictionsTool",
     "PolarisEventsTool",
+    "PolarisWebSearchTool",
+    "PolarisCrawlTool",
     "PolarisRetriever",
 ]

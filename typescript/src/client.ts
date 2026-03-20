@@ -523,6 +523,16 @@ export class PolarisClient {
     return this.request<Record<string, unknown>>("GET", "/api/v1/agent/feed", params);
   }
 
+  async webSearch(q: string, options?: { limit?: number; freshness?: string; region?: string; verify?: boolean }): Promise<Record<string, unknown>> {
+    const params: Record<string, unknown> = { q, ...options };
+    return this.request<Record<string, unknown>>("GET", "/api/v1/web-search", params);
+  }
+
+  async crawl(url: string, options?: { depth?: number; max_pages?: number; include_links?: boolean }): Promise<Record<string, unknown>> {
+    const body: Record<string, unknown> = { url, ...options };
+    return this.request<Record<string, unknown>>("POST", "/api/v1/crawl", undefined, body);
+  }
+
   stream(options: StreamOptions = {}): { start: (onBrief: (brief: Brief) => void, onError?: (error: Error) => void) => void; stop: () => void } {
     let controller: AbortController | null = null;
 

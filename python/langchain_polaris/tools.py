@@ -352,6 +352,53 @@ class PolarisEventsTool(BaseTool):
         return json.dumps(result, indent=2, default=str)
 
 
+class WebSearchInput(BaseModel):
+    query: str = Field(description="Web search query")
+    limit: Optional[int] = Field(default=None, description="Max results to return (default 5)")
+    freshness: Optional[str] = Field(default=None, description="Freshness filter (e.g. 'day', 'week', 'month')")
+    region: Optional[str] = Field(default=None, description="Region code (e.g. 'us', 'eu')")
+    verify: Optional[bool] = Field(default=None, description="Enable Polaris trust scoring on results")
+
+
+class PolarisWebSearchTool(BaseTool):
+    name: str = "polaris_web_search"
+    description: str = "Search the web with optional Polaris trust scoring. Returns web results with relevance and optional verification."
+    args_schema: Type[BaseModel] = WebSearchInput
+    api_key: str = ""
+
+    def __init__(self, api_key: str, **kwargs):
+        super().__init__(api_key=api_key, **kwargs)
+
+    def _run(self, query: str, limit: int = None, freshness: str = None, region: str = None, verify: bool = None) -> str:
+        client = PolarisClient(api_key=self.api_key)
+        result = client.web_search(query, limit=limit or 5, freshness=freshness, region=region, verify=verify or False)
+        import json
+        return json.dumps(result, indent=2, default=str)
+
+
+class CrawlInput(BaseModel):
+    url: str = Field(description="URL to crawl and extract content from")
+    depth: Optional[int] = Field(default=None, description="Crawl depth (default 1)")
+    max_pages: Optional[int] = Field(default=None, description="Max pages to crawl (default 5)")
+    include_links: Optional[bool] = Field(default=None, description="Include extracted links in response")
+
+
+class PolarisCrawlTool(BaseTool):
+    name: str = "polaris_crawl"
+    description: str = "Extract structured content from a URL with optional link following. Returns page content, metadata, and optionally discovered links."
+    args_schema: Type[BaseModel] = CrawlInput
+    api_key: str = ""
+
+    def __init__(self, api_key: str, **kwargs):
+        super().__init__(api_key=api_key, **kwargs)
+
+    def _run(self, url: str, depth: int = None, max_pages: int = None, include_links: bool = None) -> str:
+        client = PolarisClient(api_key=self.api_key)
+        result = client.crawl(url, depth=depth or 1, max_pages=max_pages or 5, include_links=include_links if include_links is not None else True)
+        import json
+        return json.dumps(result, indent=2, default=str)
+
+
 class TrendingInput(BaseModel):
     limit: Optional[int] = Field(default=None, description="Max number of trending entities to return")
 

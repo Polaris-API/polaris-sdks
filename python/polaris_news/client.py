@@ -415,6 +415,26 @@ class PolarisClient:
             params["category"] = category
         return self._request("GET", "/api/v1/agent/feed", params=params)
 
+    def web_search(self, q, limit=5, freshness=None, region=None, verify=False):
+        """Web search with optional Polaris trust scoring."""
+        params = {"q": q, "limit": limit}
+        if freshness:
+            params["freshness"] = freshness
+        if region:
+            params["region"] = region
+        if verify:
+            params["verify"] = "true"
+        return self._request("GET", "/api/v1/web-search", params=params)
+
+    def crawl(self, url, depth=1, max_pages=5, include_links=True):
+        """Extract structured content from URL with optional link following."""
+        return self._request("POST", "/api/v1/crawl", json_body={
+            "url": url,
+            "depth": depth,
+            "max_pages": max_pages,
+            "include_links": include_links,
+        })
+
     def stream(self, categories=None):
         """Stream briefs via SSE. Yields Brief objects.
 

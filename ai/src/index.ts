@@ -11,3 +11,5 @@ export { polarisTimeline } from "./tools/polaris-timeline.js";
 export { polarisForecast } from "./tools/polaris-forecast.js";
 export { polarisContradictions } from "./tools/polaris-contradictions.js";
 export { polarisEvents } from "./tools/polaris-events.js";
+export { polarisWebSearch } from "./tools/polaris-web-search.js";
+export { polarisCrawl } from "./tools/polaris-crawl.js";
