@@ -328,6 +328,93 @@ class PolarisClient:
         data = self._request("GET", "/api/v1/trending", params=params)
         return [_parse_brief(b) for b in data.get("briefs", [])]
 
+    def forecast(self, topic, depth='standard', period='30d', timeframe='30d'):
+        """Generate a forward-looking forecast for a topic."""
+        body = {"topic": topic, "depth": depth, "period": period, "timeframe": timeframe}
+        return self._request("POST", "/api/v1/forecast", json_body=body)
+
+    def diff(self, brief_id, since=0):
+        """Get changes to a living brief since a given timestamp."""
+        params = {"since": since}
+        return self._request("GET", "/api/v1/brief/{}/diff".format(brief_id), params=params)
+
+    def contradictions(self, severity=None, category=None, limit=20):
+        """Get detected contradictions across briefs."""
+        params = {"limit": limit}
+        if severity is not None:
+            params["severity"] = severity
+        if category is not None:
+            params["category"] = category
+        return self._request("GET", "/api/v1/contradictions", params=params)
+
+    def events(self, type=None, subject=None, category=None, period='30d', limit=30):
+        """Get structured events extracted from briefs."""
+        params = {"period": period, "limit": limit}
+        if type is not None:
+            params["type"] = type
+        if subject is not None:
+            params["subject"] = subject
+        if category is not None:
+            params["category"] = category
+        return self._request("GET", "/api/v1/events", params=params)
+
+    def subscribe_brief(self, brief_id):
+        """Subscribe to updates for a living brief."""
+        return self._request("POST", "/api/v1/brief/{}/subscribe".format(brief_id), json_body={})
+
+    def unsubscribe_brief(self, brief_id):
+        """Unsubscribe from a living brief."""
+        return self._request("DELETE", "/api/v1/brief/{}/subscribe".format(brief_id))
+
+    def create_watchlist(self, name, **kwargs):
+        """Create a new watchlist."""
+        body = {"name": name}
+        body.update(kwargs)
+        return self._request("POST", "/api/v1/watchlists", json_body=body)
+
+    def watchlists(self):
+        """List all watchlists."""
+        return self._request("GET", "/api/v1/watchlists")
+
+    def add_watch_item(self, watchlist_id, type, **kwargs):
+        """Add an item to a watchlist."""
+        body = {"type": type}
+        body.update(kwargs)
+        return self._request("POST", "/api/v1/watchlists/{}/items".format(watchlist_id), json_body=body)
+
+    def create_monitor(self, type, callback_url, **kwargs):
+        """Create a webhook monitor."""
+        body = {"type": type, "callback_url": callback_url}
+        body.update(kwargs)
+        return self._request("POST", "/api/v1/monitor", json_body=body)
+
+    def monitors(self):
+        """List all monitors."""
+        return self._request("GET", "/api/v1/monitors")
+
+    def create_session(self, name='default', metadata=None):
+        """Create an agent session."""
+        body = {"name": name}
+        if metadata is not None:
+            body["metadata"] = metadata
+        return self._request("POST", "/api/v1/agent/session", json_body=body)
+
+    def sessions(self):
+        """List all agent sessions."""
+        return self._request("GET", "/api/v1/agent/sessions")
+
+    def mark_read(self, session_name, brief_ids):
+        """Mark briefs as read in an agent session."""
+        body = {"brief_ids": brief_ids}
+        return self._request("POST", "/api/v1/agent/session/{}/read".format(session_name), json_body=body)
+
+    def agent_feed_filtered(self, session='default', limit=20, category=None):
+        """Get agent feed with session filtering and read-state tracking."""
+        params = {"session": session, "limit": limit}
+        if category is not None:
+            params["category"] = category
+        return self._request("GET", "/api/v1/agent/feed", params=params)
+
     def stream(self, categories=None):
         """Stream briefs via SSE. Yields Brief objects.
 

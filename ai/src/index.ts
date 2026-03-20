@@ -8,3 +8,6 @@ export { polarisCompare } from "./tools/polaris-compare.js";
 export { polarisResearch } from "./tools/polaris-research.js";
 export { polarisVerify } from "./tools/polaris-verify.js";
 export { polarisTimeline } from "./tools/polaris-timeline.js";
+export { polarisForecast } from "./tools/polaris-forecast.js";
+export { polarisContradictions } from "./tools/polaris-contradictions.js";
+export { polarisEvents } from "./tools/polaris-events.js";

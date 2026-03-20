@@ -290,6 +290,68 @@ class PolarisCompareTool(BaseTool):
         return "\n".join(lines)
 
 
+class ForecastInput(BaseModel):
+    topic: str = Field(description="Topic to forecast future developments for")
+    depth: Optional[str] = Field(default=None, description="Analysis depth: fast, standard, or deep")
+
+
+class PolarisForecastTool(BaseTool):
+    name: str = "polaris_forecast"
+    description: str = "Generate a forward-looking forecast for a topic based on current intelligence trends, momentum signals, and historical patterns."
+    args_schema: Type[BaseModel] = ForecastInput
+    api_key: str = ""
+
+    def __init__(self, api_key: str, **kwargs):
+        super().__init__(api_key=api_key, **kwargs)
+
+    def _run(self, topic: str, depth: str = None) -> str:
+        client = PolarisClient(api_key=self.api_key)
+        result = client.forecast(topic, depth=depth)
+        import json
+        return json.dumps(result, indent=2, default=str)
+
+
+class ContradictionsInput(BaseModel):
+    severity: Optional[str] = Field(default=None, description="Filter by severity level (e.g. high, medium, low)")
+
+
+class PolarisContradictionsTool(BaseTool):
+    name: str = "polaris_contradictions"
+    description: str = "Find contradictions across the intelligence brief network — stories where sources disagree on facts, framing, or conclusions."
+    args_schema: Type[BaseModel] = ContradictionsInput
+    api_key: str = ""
+
+    def __init__(self, api_key: str, **kwargs):
+        super().__init__(api_key=api_key, **kwargs)
+
+    def _run(self, severity: str = None) -> str:
+        client = PolarisClient(api_key=self.api_key)
+        result = client.contradictions(severity=severity)
+        import json
+        return json.dumps(result, indent=2, default=str)
+
+
+class EventsInput(BaseModel):
+    type: Optional[str] = Field(default=None, description="Event type to filter by")
+    subject: Optional[str] = Field(default=None, description="Subject or entity to filter events for")
+
+
+class PolarisEventsTool(BaseTool):
+    name: str = "polaris_events"
+    description: str = "Get notable events detected across intelligence briefs — significant developments, announcements, and inflection points."
+    args_schema: Type[BaseModel] = EventsInput
+    api_key: str = ""
+
+    def __init__(self, api_key: str, **kwargs):
+        super().__init__(api_key=api_key, **kwargs)
+
+    def _run(self, type: str = None, subject: str = None) -> str:
+        client = PolarisClient(api_key=self.api_key)
+        result = client.events(type=type, subject=subject)
+        import json
+        return json.dumps(result, indent=2, default=str)
+
+
 class TrendingInput(BaseModel):
     limit: Optional[int] = Field(default=None, description="Max number of trending entities to return")
 

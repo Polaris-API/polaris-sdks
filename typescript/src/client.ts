@@ -435,6 +435,94 @@ export class PolarisClient {
     return ((data.briefs || []) as Record<string, unknown>[]).map(parseBrief);
   }
 
+  async forecast(topic: string, options: { depth?: string; period?: string; timeframe?: string } = {}): Promise<Record<string, unknown>> {
+    const body: Record<string, unknown> = {
+      topic,
+      depth: options.depth ?? "standard",
+      period: options.period ?? "30d",
+      timeframe: options.timeframe ?? "30d",
+    };
+    return this.request<Record<string, unknown>>("POST", "/api/v1/forecast", undefined, body);
+  }
+
+  async diff(id: string, since?: number): Promise<Record<string, unknown>> {
+    const params: Record<string, unknown> = {};
+    if (since !== undefined) params.since = since;
+    return this.request<Record<string, unknown>>("GET", `/api/v1/brief/${id}/diff`, params);
+  }
+
+  async contradictions(options: { severity?: string; category?: string; limit?: number } = {}): Promise<Record<string, unknown>> {
+    const params: Record<string, unknown> = { limit: options.limit ?? 20 };
+    if (options.severity !== undefined) params.severity = options.severity;
+    if (options.category !== undefined) params.category = options.category;
+    return this.request<Record<string, unknown>>("GET", "/api/v1/contradictions", params);
+  }
+
+  async events(options: { type?: string; subject?: string; category?: string; period?: string; limit?: number } = {}): Promise<Record<string, unknown>> {
+    const params: Record<string, unknown> = {
+      period: options.period ?? "30d",
+      limit: options.limit ?? 30,
+    };
+    if (options.type !== undefined) params.type = options.type;
+    if (options.subject !== undefined) params.subject = options.subject;
+    if (options.category !== undefined) params.category = options.category;
+    return this.request<Record<string, unknown>>("GET", "/api/v1/events", params);
+  }
+
+  async subscribeBrief(id: string): Promise<Record<string, unknown>> {
+    return this.request<Record<string, unknown>>("POST", `/api/v1/brief/${id}/subscribe`, undefined, {});
+  }
+
+  async unsubscribeBrief(id: string): Promise<Record<string, unknown>> {
+    return this.request<Record<string, unknown>>("DELETE", `/api/v1/brief/${id}/subscribe`);
+  }
+
+  async watchlists(): Promise<Record<string, unknown>> {
+    return this.request<Record<string, unknown>>("GET", "/api/v1/watchlists");
+  }
+
+  async createWatchlist(name: string, options: Record<string, unknown> = {}): Promise<Record<string, unknown>> {
+    const body: Record<string, unknown> = { name, ...options };
+    return this.request<Record<string, unknown>>("POST", "/api/v1/watchlists", undefined, body);
+  }
+
+  async addWatchItem(watchlistId: string, type: string, options: Record<string, unknown> = {}): Promise<Record<string, unknown>> {
+    const body: Record<string, unknown> = { type, ...options };
+    return this.request<Record<string, unknown>>("POST", `/api/v1/watchlists/${watchlistId}/items`, undefined, body);
+  }
+
+  async createMonitor(options: { type: string; callback_url: string; [key: string]: unknown }): Promise<Record<string, unknown>> {
+    return this.request<Record<string, unknown>>("POST", "/api/v1/monitor", undefined, options);
+  }
+
+  async monitors(): Promise<Record<string, unknown>> {
+    return this.request<Record<string, unknown>>("GET", "/api/v1/monitors");
+  }
+
+  async createSession(name?: string, metadata?: Record<string, unknown>): Promise<Record<string, unknown>> {
+    const body: Record<string, unknown> = { name: name ?? "default" };
+    if (metadata !== undefined) body.metadata = metadata;
+    return this.request<Record<string, unknown>>("POST", "/api/v1/agent/session", undefined, body);
+  }
+
+  async sessions(): Promise<Record<string, unknown>> {
+    return this.request<Record<string, unknown>>("GET", "/api/v1/agent/sessions");
+  }
+
+  async markRead(sessionName: string, briefIds: string[]): Promise<Record<string, unknown>> {
+    const body = { brief_ids: briefIds };
+    return this.request<Record<string, unknown>>("POST", `/api/v1/agent/session/${sessionName}/read`, undefined, body);
+  }
+
+  async agentFeedFiltered(options: { session?: string; limit?: number; category?: string } = {}): Promise<Record<string, unknown>> {
+    const params: Record<string, unknown> = {
+      session: options.session ?? "default",
+      limit: options.limit ?? 20,
+    };
+    if (options.category !== undefined) params.category = options.category;
+    return this.request<Record<string, unknown>>("GET", "/api/v1/agent/feed", params);
+  }
+
   stream(options: StreamOptions = {}): { start: (onBrief: (brief: Brief) => void, onError?: (error: Error) => void) => void; stop: () => void } {
     let controller: AbortController | null = null;
 
