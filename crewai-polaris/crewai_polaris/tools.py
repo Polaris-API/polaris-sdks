@@ -291,3 +291,359 @@ class PolarisTrendingTool(BaseTool):
             lines.append("- {} ({}, {} mentions)".format(
                 e.name, e.type or "N/A", e.mention_count or 0))
         return "\n".join(lines)
+
+
+# ── Market Data Tools ──
+
+
+class CandlesInput(BaseModel):
+    symbol: str = Field(description="Ticker symbol (e.g. 'AAPL', 'NVDA')")
+    interval: Optional[str] = Field(default=None, description="Candle interval: 1d, 1wk, or 1mo (default 1d)")
+    range: Optional[str] = Field(default=None, description="Date range: 1mo, 3mo, 6mo, 1y, 2y, 5y (default 6mo)")
+
+
+class PolarisCandlesTool(BaseTool):
+    name: str = "polaris_candles"
+    description: str = "Get OHLCV candlestick data for a ticker symbol. Returns date, open, high, low, close, and volume for each period."
+    args_schema: Type[BaseModel] = CandlesInput
+    api_key: str = ""
+
+    def __init__(self, api_key: str, **kwargs):
+        super().__init__(api_key=api_key, **kwargs)
+
+    def _run(self, symbol: str, interval: str = None, range: str = None) -> str:
+        client = PolarisClient(api_key=self.api_key)
+        result = client.candles(symbol, interval=interval or '1d', range=range or '6mo')
+        candles = result.get("candles", [])
+        if not candles:
+            return "No candle data found for '{}'.".format(symbol)
+        lines = ["{} — {} candles ({}, {})".format(
+            result.get("ticker", symbol),
+            result.get("candle_count", len(candles)),
+            result.get("interval", "1d"),
+            result.get("range", "6mo"),
+        )]
+        for c in candles[-10:]:
+            lines.append("  {} O={} H={} L={} C={} V={}".format(
+                c.get("date", "?"),
+                c.get("open", "?"),
+                c.get("high", "?"),
+                c.get("low", "?"),
+                c.get("close", "?"),
+                c.get("volume", "?"),
+            ))
+        if len(candles) > 10:
+            lines.insert(1, "(showing last 10 of {})".format(len(candles)))
+        return "\n".join(lines)
+
+
+class TechnicalsInput(BaseModel):
+    symbol: str = Field(description="Ticker symbol (e.g. 'NVDA')")
+    range: Optional[str] = Field(default=None, description="Date range for indicator calculation: 1mo, 3mo, 6mo, 1y, 2y, 5y (default 6mo)")
+
+
+class PolarisTechnicalsTool(BaseTool):
+    name: str = "polaris_technicals"
+    description: str = "Get all technical indicators and a signal summary for a ticker. Includes SMA, EMA, RSI, MACD, Bollinger Bands, ATR, Stochastic, ADX, OBV, VWAP with an overall buy/sell/neutral verdict."
+    args_schema: Type[BaseModel] = TechnicalsInput
+    api_key: str = ""
+
+    def __init__(self, api_key: str, **kwargs):
+        super().__init__(api_key=api_key, **kwargs)
+
+    def _run(self, symbol: str, range: str = None) -> str:
+        client = PolarisClient(api_key=self.api_key)
+        result = client.technicals(symbol, range=range or '6mo')
+        ticker = result.get("ticker", symbol)
+        summary = result.get("summary", {})
+        indicators = result.get("indicators", {})
+        lines = ["{} — Technical Analysis".format(ticker)]
+        if summary:
+            lines.append("Signal: {} | Buy: {} | Sell: {} | Neutral: {}".format(
+                summary.get("signal", "N/A"),
+                summary.get("buy_count", 0),
+                summary.get("sell_count", 0),
+                summary.get("neutral_count", 0),
+            ))
+        price = result.get("price", {})
+        if price:
+            lines.append("Price: {} | Range: {}-{}".format(
+                price.get("close", "N/A"),
+                price.get("low", "N/A"),
+                price.get("high", "N/A"),
+            ))
+        for name, data in indicators.items():
+            if isinstance(data, dict):
+                signal = data.get("signal", "")
+                value = data.get("value", data.get("latest", ""))
+                lines.append("  {}: {} [{}]".format(name.upper(), value, signal))
+        return "\n".join(lines)
+
+
+class MarketMoversInput(BaseModel):
+    pass
+
+
+class PolarisMarketMoversTool(BaseTool):
+    name: str = "polaris_market_movers"
+    description: str = "Get top market movers — gainers, losers, and most active stocks by volume. Useful for a quick snapshot of what is moving in the market right now."
+    args_schema: Type[BaseModel] = MarketMoversInput
+    api_key: str = ""
+
+    def __init__(self, api_key: str, **kwargs):
+        super().__init__(api_key=api_key, **kwargs)
+
+    def _run(self) -> str:
+        client = PolarisClient(api_key=self.api_key)
+        result = client.market_movers()
+        lines = ["Market Movers"]
+        for section, label in [("gainers", "Top Gainers"), ("losers", "Top Losers"), ("most_active", "Most Active")]:
+            items = result.get(section, [])
+            if items:
+                lines.append("\n{}:".format(label))
+                for item in items[:5]:
+                    change = item.get("change_percent", item.get("changesPercentage", "N/A"))
+                    lines.append("  {} — ${} ({}%)".format(
+                        item.get("symbol", item.get("ticker", "?")),
+                        item.get("price", "?"),
+                        change,
+                    ))
+        return "\n".join(lines)
+
+
+class EconomyInput(BaseModel):
+    indicator: Optional[str] = Field(default=None, description="Indicator slug (e.g. gdp, cpi, unemployment, fed_funds). Omit for summary of all.")
+    limit: Optional[int] = Field(default=None, description="Number of historical observations to return (default 30, max 100)")
+
+
+class PolarisEconomyTool(BaseTool):
+    name: str = "polaris_economy"
+    description: str = "Get economic indicators from the FRED API. Without an indicator slug, returns a summary of all key indicators (GDP, CPI, unemployment, etc.). With a slug, returns that indicator's history."
+    args_schema: Type[BaseModel] = EconomyInput
+    api_key: str = ""
+
+    def __init__(self, api_key: str, **kwargs):
+        super().__init__(api_key=api_key, **kwargs)
+
+    def _run(self, indicator: str = None, limit: int = None) -> str:
+        client = PolarisClient(api_key=self.api_key)
+        result = client.economy(indicator=indicator, limit=limit)
+        if indicator:
+            lines = ["{} ({})".format(result.get("name", indicator), result.get("indicator", indicator))]
+            latest = result.get("latest", {})
+            if latest:
+                lines.append("Latest: {} ({}) | Units: {} | Frequency: {}".format(
+                    latest.get("value", "N/A"),
+                    latest.get("date", "N/A"),
+                    result.get("units", "N/A"),
+                    result.get("frequency", "N/A"),
+                ))
+            observations = result.get("observations", [])
+            if observations:
+                lines.append("Recent observations:")
+                for obs in observations[:10]:
+                    lines.append("  {} = {}".format(obs.get("date", "?"), obs.get("value", "?")))
+        else:
+            indicators = result.get("indicators", [])
+            if not indicators:
+                return "No economic data available."
+            lines = ["Economic Indicators Summary ({} indicators)".format(len(indicators))]
+            for ind in indicators:
+                lines.append("  {} ({}): {} ({})".format(
+                    ind.get("name", "?"),
+                    ind.get("slug", "?"),
+                    ind.get("latest_value", "N/A"),
+                    ind.get("latest_date", "N/A"),
+                ))
+        return "\n".join(lines)
+
+
+class ForexInput(BaseModel):
+    pair: Optional[str] = Field(default=None, description="Forex pair (e.g. EURUSD, GBPJPY). Omit for all major pairs.")
+
+
+class PolarisForexTool(BaseTool):
+    name: str = "polaris_forex"
+    description: str = "Get forex rates. Without a pair, returns all major currency pairs with current rates. With a pair, returns that pair's rate, change, and session data."
+    args_schema: Type[BaseModel] = ForexInput
+    api_key: str = ""
+
+    def __init__(self, api_key: str, **kwargs):
+        super().__init__(api_key=api_key, **kwargs)
+
+    def _run(self, pair: str = None) -> str:
+        client = PolarisClient(api_key=self.api_key)
+        result = client.forex(pair=pair)
+        if pair:
+            lines = ["{} — Forex".format(result.get("pair", pair))]
+            lines.append("Rate: {} | Change: {}%".format(
+                result.get("rate", result.get("price", "N/A")),
+                result.get("change_percent", result.get("changesPercentage", "N/A")),
+            ))
+            if result.get("high"):
+                lines.append("High: {} | Low: {} | Open: {}".format(
+                    result.get("high", "N/A"),
+                    result.get("low", "N/A"),
+                    result.get("open", "N/A"),
+                ))
+        else:
+            pairs = result.get("pairs", result.get("rates", []))
+            if not pairs:
+                return "No forex data available."
+            lines = ["Forex Rates ({} pairs)".format(len(pairs))]
+            for p in pairs:
+                lines.append("  {} = {} ({}%)".format(
+                    p.get("pair", p.get("symbol", "?")),
+                    p.get("rate", p.get("price", "?")),
+                    p.get("change_percent", p.get("changesPercentage", "N/A")),
+                ))
+        return "\n".join(lines)
+
+
+class CommoditiesInput(BaseModel):
+    symbol: Optional[str] = Field(default=None, description="Commodity symbol (e.g. GC for gold, CL for crude oil). Omit for all commodities.")
+
+
+class PolarisCommoditiesTool(BaseTool):
+    name: str = "polaris_commodities"
+    description: str = "Get commodity prices. Without a symbol, returns all tracked commodities with current prices. With a symbol, returns that commodity's price, change, and details."
+    args_schema: Type[BaseModel] = CommoditiesInput
+    api_key: str = ""
+
+    def __init__(self, api_key: str, **kwargs):
+        super().__init__(api_key=api_key, **kwargs)
+
+    def _run(self, symbol: str = None) -> str:
+        client = PolarisClient(api_key=self.api_key)
+        result = client.commodities(symbol=symbol)
+        if symbol:
+            lines = ["{} — {}".format(
+                result.get("symbol", symbol),
+                result.get("name", "Commodity"),
+            )]
+            lines.append("Price: ${} | Change: {}%".format(
+                result.get("price", "N/A"),
+                result.get("change_percent", result.get("changesPercentage", "N/A")),
+            ))
+            if result.get("high"):
+                lines.append("High: ${} | Low: ${} | Open: ${}".format(
+                    result.get("high", "N/A"),
+                    result.get("low", "N/A"),
+                    result.get("open", "N/A"),
+                ))
+        else:
+            commodities = result.get("commodities", result.get("data", []))
+            if not commodities:
+                return "No commodity data available."
+            lines = ["Commodities ({} tracked)".format(len(commodities))]
+            for c in commodities:
+                lines.append("  {} ({}) — ${} ({}%)".format(
+                    c.get("symbol", "?"),
+                    c.get("name", "?"),
+                    c.get("price", "?"),
+                    c.get("change_percent", c.get("changesPercentage", "N/A")),
+                ))
+        return "\n".join(lines)
+
+
+# ── Crypto Tools ──
+
+
+class CryptoInput(BaseModel):
+    symbol: Optional[str] = Field(default=None, description="Crypto symbol (e.g. BTC, ETH, SOL). Omit for market overview.")
+
+
+class PolarisCryptoTool(BaseTool):
+    name: str = "polaris_crypto"
+    description: str = "Get crypto market data. Without a symbol, returns market overview (total market cap, BTC dominance). With a symbol, returns that token's price, volume, and metadata."
+    args_schema: Type[BaseModel] = CryptoInput
+    api_key: str = ""
+
+    def __init__(self, api_key: str, **kwargs):
+        super().__init__(api_key=api_key, **kwargs)
+
+    def _run(self, symbol: str = None) -> str:
+        client = PolarisClient(api_key=self.api_key)
+        result = client.crypto(symbol=symbol)
+        if symbol:
+            lines = ["{} — {}".format(
+                result.get("symbol", symbol),
+                result.get("name", "Unknown"),
+            )]
+            lines.append("Price: ${} | 24h Change: {}%".format(
+                result.get("price", result.get("current_price", "N/A")),
+                result.get("change_24h", result.get("price_change_percentage_24h", "N/A")),
+            ))
+            lines.append("Market Cap: ${} | 24h Volume: ${}".format(
+                result.get("market_cap", "N/A"),
+                result.get("volume_24h", result.get("total_volume", "N/A")),
+            ))
+            if result.get("ath"):
+                lines.append("ATH: ${} | ATH Change: {}%".format(
+                    result.get("ath", "N/A"),
+                    result.get("ath_change_percentage", "N/A"),
+                ))
+        else:
+            lines = ["Crypto Market Overview"]
+            lines.append("Total Market Cap: ${}".format(result.get("total_market_cap", "N/A")))
+            lines.append("BTC Dominance: {}%".format(result.get("btc_dominance", "N/A")))
+            lines.append("24h Volume: ${}".format(result.get("total_volume_24h", "N/A")))
+            top = result.get("top_coins", [])
+            if top:
+                lines.append("\nTop coins:")
+                for coin in top[:10]:
+                    lines.append("  {} — ${} ({}%)".format(
+                        coin.get("symbol", "?"),
+                        coin.get("price", coin.get("current_price", "?")),
+                        coin.get("change_24h", coin.get("price_change_percentage_24h", "?")),
+                    ))
+        return "\n".join(lines)
+
+
+class DefiInput(BaseModel):
+    protocol: Optional[str] = Field(default=None, description="DeFi protocol slug (e.g. aave, uniswap, lido). Omit for overview.")
+
+
+class PolarisDefiTool(BaseTool):
+    name: str = "polaris_defi"
+    description: str = "Get DeFi data. Without a protocol, returns TVL overview with top protocols and chain breakdown. With a protocol slug, returns that protocol's TVL history and details."
+    args_schema: Type[BaseModel] = DefiInput
+    api_key: str = ""
+
+    def __init__(self, api_key: str, **kwargs):
+        super().__init__(api_key=api_key, **kwargs)
+
+    def _run(self, protocol: str = None) -> str:
+        client = PolarisClient(api_key=self.api_key)
+        result = client.crypto_defi(protocol=protocol)
+        if protocol:
+            lines = ["{} — DeFi Protocol".format(result.get("name", protocol))]
+            lines.append("TVL: ${} | Chain: {}".format(
+                result.get("tvl", "N/A"),
+                result.get("chain", result.get("chains", "N/A")),
+            ))
+            if result.get("category"):
+                lines.append("Category: {}".format(result.get("category")))
+            history = result.get("tvl_history", [])
+            if history:
+                lines.append("Recent TVL history:")
+                for h in history[-5:]:
+                    lines.append("  {} = ${}".format(h.get("date", "?"), h.get("tvl", "?")))
+        else:
+            lines = ["DeFi Overview"]
+            lines.append("Total TVL: ${}".format(result.get("total_tvl", "N/A")))
+            protocols = result.get("top_protocols", result.get("protocols", []))
+            if protocols:
+                lines.append("\nTop protocols:")
+                for p in protocols[:10]:
+                    lines.append("  {} — TVL: ${} ({})".format(
+                        p.get("name", "?"),
+                        p.get("tvl", "?"),
+                        p.get("chain", p.get("chains", "N/A")),
+                    ))
+            chains = result.get("chains", [])
+            if isinstance(chains, list) and chains:
+                lines.append("\nChain TVL:")
+                for ch in chains[:10]:
+                    lines.append("  {} — ${}".format(ch.get("name", "?"), ch.get("tvl", "?")))
+        return "\n".join(lines)
