@@ -1,6 +1,24 @@
 # Polaris SDKs
 
-Official SDKs and framework integrations for [The Polaris Report](https://thepolarisreport.com) API.
+**Financial intelligence for AI agents. Just /ask Polaris.**
+
+Official SDKs and framework integrations for [The Polaris Report](https://thepolarisreport.com) — the financial data layer for AI agents.
+
+## Fastest Way to Start
+
+```python
+from polaris_news import Agent
+
+agent = Agent()  # reads POLARIS_API_KEY from env
+result = agent.ask("What's happening with NVDA?")
+print(result.summary)
+```
+
+```typescript
+import { Agent } from 'polaris-news-api';
+const agent = new Agent();
+const result = await agent.ask("What's happening with NVDA?");
+```
 
 ## SDKs
 
