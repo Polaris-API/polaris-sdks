@@ -1,4 +1,6 @@
 export { PolarisClient } from "./client.js";
+export { Agent } from "./agent.js";
+export type { AskResult, FullResult, SubscribeEvent, AgentOptions } from "./agent.js";
 export {
   PolarisError,
   AuthenticationError,

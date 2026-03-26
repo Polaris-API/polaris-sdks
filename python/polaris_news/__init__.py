@@ -1,6 +1,7 @@
 __version__ = "0.6.0"
 
 from .client import PolarisClient
+from .agent import Agent, AskResult, FullResult, SubscribeEvent
 from .exceptions import APIError, AuthenticationError, NotFoundError, PolarisError, RateLimitError
 from .types import (
     Brief,
