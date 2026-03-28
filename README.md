@@ -1,25 +1,25 @@
-# Polaris SDKs + CLI
+# VEROQ SDKs + CLI
 
-**The trust layer for AI agents. Starting with finance. Just /ask Polaris.**
+**The truth protocol for agentic AI. Verified intelligence for agents that can't afford to be wrong.**
 
-Official SDKs, CLI, and framework integrations for [The Polaris Report](https://thepolarisreport.com) — 1,061+ tickers, 20 technical indicators, NLP screener, trade signals, and verified intelligence.
+Official SDKs, CLI, and framework integrations for [VEROQ](https://veroq.ai) — 1,061+ tickers, 20 technical indicators, NLP screener, trade signals, and verified intelligence.
 
 ## Fastest Way to Start
 
 ```bash
-npm install -g @polaris-news/cli
-export POLARIS_API_KEY=pr_live_xxx   # Free: thepolarisreport.com/pricing
+npm install -g @veroq/cli
+export VEROQ_API_KEY=vq_live_xxx   # Free: veroq.ai/pricing
 
-polaris ask "What's happening with NVDA?"
-polaris screen "oversold semiconductors"
-polaris signal MSFT
-polaris compare AAPL MSFT GOOGL
+veroq ask "What's happening with NVDA?"
+veroq screen "oversold semiconductors"
+veroq signal MSFT
+veroq compare AAPL MSFT GOOGL
 ```
 
 Or use the SDKs:
 
 ```python
-from polaris_news import Agent
+from veroq import Agent
 agent = Agent()
 result = agent.ask("What's happening with NVDA?")
 print(result.summary)        # Markdown summary with bottom line
@@ -32,38 +32,37 @@ const agent = new Agent();
 const result = await agent.ask("What's happening with NVDA?");
 ```
 
-[Try it live](https://thepolarisreport.com/ask) — no signup required.
+[Try it live](https://veroq.ai) — no signup required.
 
 ## Packages
 
 | Package | Type | Install |
 |---------|------|---------|
-| [`@polaris-news/cli`](./cli/) | CLI | `npm install -g @polaris-news/cli` |
-| [`polaris-news`](./python/) | Python SDK | `pip install polaris-news` |
+| [`@veroq/cli`](./veroq-cli/) | CLI | `npm install -g @veroq/cli` |
+| [`veroq`](./veroq-python/) | Python SDK | `pip install veroq` |
 | [`polaris-news-api`](./typescript/) | TypeScript SDK | `npm install polaris-news-api` |
-| [`@polaris-news/ai`](./ai/) | Vercel AI SDK | `npm install @polaris-news/ai` |
-| [`crewai-polaris`](./crewai-polaris/) | CrewAI | `pip install crewai-polaris` |
-| [`langchain-polaris`](./langchain/) | LangChain | `pip install langchain-polaris` |
-| [`n8n-nodes-polaris`](./n8n/) | n8n | [GitHub](https://github.com/Polaris-API/polaris-sdks/tree/main/n8n) |
-| [`polaris-news-mcp`](https://www.npmjs.com/package/polaris-news-mcp) | MCP Server | `npm install -g polaris-news-mcp` |
-| Cursor | MCP Plugin | [Add to Cursor](cursor://anysphere.cursor-deeplink/mcp/install?name=Polaris&config=eyJ1cmwiOiJodHRwczovL2FwaS50aGVwb2xhcmlzcmVwb3J0LmNvbS9hcGkvdjEvbWNwP2tleT1ZT1VSX0FQSV9LRVkifQ==) |
+| [`@veroq/ai`](./veroq-ai/) | Vercel AI SDK | `npm install @veroq/ai` |
+| [`crewai-veroq`](./crewai-veroq/) | CrewAI | `pip install crewai-veroq` |
+| [`langchain-veroq`](./langchain-veroq/) | LangChain | `pip install langchain-veroq` |
+| [`n8n-nodes-veroq`](./n8n-veroq/) | n8n | `npm install n8n-nodes-veroq` |
+| [`veroq-mcp`](./veroq-mcp/) | MCP Server | `npm install -g veroq-mcp` |
 
 ## CLI Commands
 
 | Command | Description |
 |---------|-------------|
-| `polaris ask <question>` | Natural language query — returns structured intelligence |
-| `polaris price <TICKER>` | Live price |
-| `polaris screen <criteria>` | NLP stock screener |
-| `polaris compare <T1> <T2>` | Side-by-side comparison |
-| `polaris signal <TICKER>` | Trade readiness score (0-100) |
-| `polaris earnings <TICKER>` | Next earnings + estimates |
-| `polaris insider <TICKER>` | Insider transactions |
-| `polaris technicals <TICKER>` | RSI, MACD, SMA, signals |
-| `polaris full <TICKER>` | 9 data sources in one call |
-| `polaris market` | Market overview + VIX |
-| `polaris news <query>` | Search intelligence briefs |
-| `polaris verify <claim>` | Fact-check against brief corpus |
+| `veroq ask <question>` | Natural language query — returns structured intelligence |
+| `veroq price <TICKER>` | Live price |
+| `veroq screen <criteria>` | NLP stock screener |
+| `veroq compare <T1> <T2>` | Side-by-side comparison |
+| `veroq signal <TICKER>` | Trade readiness score (0-100) |
+| `veroq earnings <TICKER>` | Next earnings + estimates |
+| `veroq insider <TICKER>` | Insider transactions |
+| `veroq technicals <TICKER>` | RSI, MACD, SMA, signals |
+| `veroq full <TICKER>` | 9 data sources in one call |
+| `veroq market` | Market overview + VIX |
+| `veroq news <query>` | Search intelligence briefs |
+| `veroq verify <claim>` | Fact-check against brief corpus |
 
 JSON by default (agent-first). Use `--human` for formatted output.
 
@@ -88,17 +87,17 @@ See [`examples/`](./examples/) for working integration examples:
 ## Auth
 
 ```bash
-export POLARIS_API_KEY=pr_live_xxx
+export VEROQ_API_KEY=vq_live_xxx
 ```
 
-Get a free key (1,000 credits/month): [thepolarisreport.com/pricing](https://thepolarisreport.com/pricing)
+Get a free key (1,000 credits/month): [veroq.ai/pricing](https://veroq.ai/pricing)
 
 ## Links
 
-- [Interactive Demo](https://thepolarisreport.com/ask)
-- [API Documentation](https://thepolarisreport.com/docs)
-- [API Reference](https://thepolarisreport.com/api-reference)
-- [TradingAgents-Pro](https://github.com/Polaris-API/TradingAgents-Pro) — 18-agent trading framework powered by Polaris
+- [Interactive Demo](https://veroq.ai)
+- [API Documentation](https://veroq.ai/docs)
+- [API Reference](https://veroq.ai/api-reference)
+- [TradingAgents-Pro](https://github.com/Polaris-API/TradingAgents-Pro) — 18-agent trading framework powered by VEROQ
 
 ## License
 
