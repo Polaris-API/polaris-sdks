@@ -1,0 +1,42 @@
+{
+  "name": "n8n-nodes-veroq",
+  "version": "2.0.0",
+  "description": "n8n community node for VEROQ Intelligence API — verified, bias-scored intelligence across 18 verticals",
+  "license": "MIT",
+  "n8n": {
+    "nodes": [
+      "dist/nodes/Veroq.node.js"
+    ],
+    "credentials": [
+      "dist/credentials/VeroqApi.credentials.js"
+    ]
+  },
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "devDependencies": {
+    "n8n-workflow": "^1.0.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "^1.0.0"
+  },
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "veroq",
+    "intelligence",
+    "news",
+    "financial-data",
+    "market-data",
+    "crypto",
+    "ai-agents"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Polaris-API/polaris-sdks"
+  },
+  "homepage": "https://veroq.co"
+}

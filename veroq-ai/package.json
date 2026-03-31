@@ -1,0 +1,54 @@
+{
+  "name": "@veroq/ai",
+  "version": "2.0.0",
+  "description": "VEROQ tools for the Vercel AI SDK — verified financial intelligence for AI agents",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch"
+  },
+  "dependencies": {
+    "polaris-news-api": "^0.9.0"
+  },
+  "peerDependencies": {
+    "ai": ">=4.0.0",
+    "zod": ">=3.0.0"
+  },
+  "devDependencies": {
+    "ai": "^4.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "zod": "^3.23.0"
+  },
+  "keywords": [
+    "veroq",
+    "financial-intelligence",
+    "ai",
+    "vercel",
+    "ai-sdk",
+    "tools",
+    "agent",
+    "trading",
+    "market-data",
+    "news"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Polaris-API/polaris-sdks",
+    "directory": "veroq-ai"
+  },
+  "homepage": "https://veroq.ai"
+}
