@@ -1,8 +1,8 @@
 # veroq
 
-Official Python SDK for [VeroQ](https://veroq.ai) — the verified intelligence layer for AI agents.
+**Verified AI. One function call.** Stop shipping hallucinations.
 
-Every claim is fact-checked with evidence chains. Every output includes confidence scores. Enterprise customers get decision lineage, escalation triggers, and full audit trails.
+Official Python SDK for [VeroQ](https://veroq.ai). `shield()` any LLM output — every claim fact-checked with evidence chains, confidence scores, and verification receipts.
 
 > Migrating from `polaris-news`? Drop-in replacement — just change your import.
 
