@@ -24,8 +24,9 @@ from .client import VeroqClient
 class ShieldResult:
     """Result of shielding an LLM output through VeroQ verification."""
 
-    def __init__(self, raw):
+    def __init__(self, raw, full_text=None):
         self._raw = raw
+        self._full_text = full_text
         self.text = raw.get("text", "")
         self.source = raw.get("source", "unknown")
         self.claims = raw.get("claims", [])
@@ -57,7 +58,7 @@ class ShieldResult:
     @property
     def verified_text(self):
         """Original text with contradicted claims annotated."""
-        text = self._raw.get("text", "")
+        text = self._full_text or self._raw.get("text", "")
         for c in self.claims:
             if c.get("verdict") == "contradicted" and c.get("correction"):
                 original = c["text"]
@@ -152,7 +153,7 @@ def shield(text, source=None, agent_id=None, max_claims=5, api_key=None, base_ur
         except Exception:
             pass  # Memory storage is non-blocking
 
-    result = ShieldResult(raw)
+    result = ShieldResult(raw, full_text=text)
 
     if block_if_untrusted and not result.is_trusted:
         from .exceptions import VeroqError

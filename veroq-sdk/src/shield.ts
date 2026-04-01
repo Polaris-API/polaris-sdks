@@ -69,7 +69,11 @@ export class ShieldResult {
   /** Processing time in ms */
   readonly processingTimeMs: number;
 
-  constructor(raw: Record<string, any>) {
+  /** Full original text (before server truncation) */
+  private readonly _fullText: string;
+
+  constructor(raw: Record<string, any>, fullText?: string) {
+    this._fullText = fullText || raw.text || "";
     this.text = raw.text || "";
     this.source = raw.source || "unknown";
     this.claims = (raw.claims || []).map((c: any) => ({
@@ -106,7 +110,7 @@ export class ShieldResult {
 
   /** Text with contradicted claims annotated */
   get verifiedText(): string {
-    let result = this.text;
+    let result = this._fullText;
     for (const c of this.claims) {
       if (c.verdict === "contradicted" && c.correction && result.includes(c.text)) {
         result = result.replace(c.text, `[CORRECTED: ${c.correction.slice(0, 200)}]`);
@@ -182,7 +186,7 @@ export async function shield(text: string, options: ShieldOptions = {}): Promise
     }, { category: "verification", queryText: text.slice(0, 200) }).catch(() => {});
   }
 
-  const result = new ShieldResult(raw);
+  const result = new ShieldResult(raw, text);
 
   if (options.blockIfUntrusted && !result.isTrusted) {
     throw new VeroqError(
