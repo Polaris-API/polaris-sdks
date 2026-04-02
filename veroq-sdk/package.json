@@ -56,11 +56,11 @@
   "homepage": "https://veroq.ai",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Veroq-api/veroq-sdk",
+    "url": "https://github.com/veroq-ai/veroq-sdk",
     "directory": "veroq-sdk"
   },
   "bugs": {
-    "url": "https://github.com/Veroq-api/veroq-sdk/issues"
+    "url": "https://github.com/veroq-ai/veroq-sdk/issues"
   },
   "engines": {
     "node": ">=18"

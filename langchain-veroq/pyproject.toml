@@ -33,7 +33,7 @@ dependencies = [
 [project.urls]
 Homepage = "https://veroq.ai"
 Documentation = "https://veroq.ai/docs"
-Repository = "https://github.com/Veroq-api/langchain-veroq"
+Repository = "https://github.com/veroq-ai/langchain-veroq"
 
 [tool.hatch.build.targets.wheel]
 packages = ["langchain_veroq"]

@@ -22,7 +22,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Veroq-api/veroq-cli.git"
+    "url": "git+https://github.com/veroq-ai/veroq-cli.git"
   },
   "homepage": "https://veroq.ai",
   "engines": {

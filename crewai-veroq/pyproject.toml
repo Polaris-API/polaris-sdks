@@ -30,4 +30,4 @@ dependencies = [
 [project.urls]
 Homepage = "https://veroq.ai"
 Documentation = "https://veroq.ai/docs"
-Repository = "https://github.com/Veroq-api/crewai-veroq"
+Repository = "https://github.com/veroq-ai/crewai-veroq"

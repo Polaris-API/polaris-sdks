@@ -70,4 +70,4 @@ These handle most use cases. The other resources give you granular access when y
 
 - [API Documentation](https://veroq.ai/docs)
 - [Get API Key](https://veroq.ai/dashboard)
-- [GitHub](https://github.com/Veroq-api/polaris-sdks)
+- [GitHub](https://github.com/veroq-ai/polaris-sdks)

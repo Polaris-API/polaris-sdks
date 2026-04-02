@@ -36,7 +36,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/Veroq-api/n8n-veroq"
+    "url": "https://github.com/veroq-ai/n8n-veroq"
   },
   "homepage": "https://veroq.ai"
 }
