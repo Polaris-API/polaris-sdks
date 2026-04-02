@@ -60,6 +60,7 @@ if (!KEY && command !== "help") {
 
 const commands = {
   ask: cmdAsk,
+  "/ask": cmdAsk,
   price: cmdPrice,
   screen: cmdScreen,
   compare: cmdCompare,
@@ -69,9 +70,19 @@ const commands = {
   market: cmdMarket,
   news: cmdNews,
   verify: cmdVerify,
+  "/verify": cmdVerify,
   full: cmdFull,
   technicals: cmdTechnicals,
   search: cmdSearch,
+  shield: cmdShield,
+  "/shield": cmdShield,
+  swarm: cmdSwarm,
+  "/swarm": cmdSwarm,
+  analyze: cmdAnalyze,
+  "/analyze": cmdAnalyze,
+  feedback: cmdFeedback,
+  "/feedback": cmdFeedback,
+  consolidate: cmdConsolidate,
 };
 
 const handler = commands[command];
@@ -394,13 +405,115 @@ AUTH
 EXAMPLES
   veroq ask "How is NVDA doing?"
   veroq verify "NVIDIA beat Q4 earnings"
+  veroq shield "NVIDIA reported $22B in Q4 revenue"
+  veroq swarm "Analyze NVDA for a long position"
+  veroq /analyze NVDA
+  veroq feedback --session swarm_123 --reason data_gap --detail "Missing insider data"
   veroq screen "low RSI semiconductors" --human
   veroq signal MSFT
   veroq compare AAPL MSFT GOOGL --human
   veroq market --human
 
 DOCS
-  https://veroq.dev/docs
-  https://github.com/Polaris-API/veroq-cli
+  https://veroq.ai/docs
 `.trim());
+}
+
+// ── Slash commands ──
+
+async function cmdShield(args) {
+  const text = args.join(" ");
+  if (!text) { console.error("Usage: veroq shield <text to verify>"); process.exit(1); }
+
+  const data = await api("/api/v1/verify/output", "POST", { text, source: "cli", max_claims: 5 });
+
+  output(data, d => {
+    console.log(`Trust: ${Math.round((d.overall_confidence || 0) * 100)}% | Verdict: ${d.overall_verdict || "unknown"}\n`);
+    console.log(`Claims: ${d.claims_extracted} extracted, ${d.claims_supported || 0} supported, ${d.claims_contradicted || 0} contradicted\n`);
+    if (d.summary) console.log(`  ${d.summary}\n`);
+    for (const c of (d.claims || [])) {
+      const icon = c.verdict === "supported" ? "✓" : c.verdict === "contradicted" ? "✗" : "?";
+      console.log(`  [${icon}] ${c.text}`);
+      if (c.correction) console.log(`    → ${c.correction}`);
+      if (c.receipt_id) console.log(`    Receipt: ${c.receipt_id}`);
+    }
+  });
+}
+
+async function cmdSwarm(args) {
+  const query = args.join(" ");
+  if (!query) { console.error("Usage: veroq swarm <query>"); process.exit(1); }
+
+  const data = await api("/api/v1/swarm/run", "POST", {
+    query,
+    roles: ["planner", "researcher", "verifier", "critic", "synthesizer"],
+  });
+
+  output(data, d => {
+    console.log(`Swarm: ${d.steps?.length || 0} steps | Credits: ${d.total_credits_used}\n`);
+    for (const s of (d.steps || [])) {
+      const summary = (s.summary || "").replace(/[#*|]/g, "").replace(/\n{2,}/g, " ").trim().slice(0, 150);
+      console.log(`  [${s.role}] ${summary}`);
+    }
+    const vs = d.verification_summary;
+    if (vs) console.log(`\n  Verified: ${vs.steps_verified}/${vs.steps_total} | Confidence: ${vs.avg_confidence}%`);
+    if (d.shield) console.log(`  Shield: trust=${d.shield.trust_score} corrections=${d.shield.corrections?.length || 0}`);
+    if (d.synthesis?.summary) {
+      const syn = d.synthesis.summary.replace(/[#*|]/g, "").replace(/\n{2,}/g, " ").trim().slice(0, 300);
+      console.log(`\n  Synthesis: ${syn}`);
+    }
+  });
+}
+
+async function cmdAnalyze(args) {
+  const ticker = args[0]?.toUpperCase();
+  if (!ticker) { console.error("Usage: veroq analyze <TICKER>"); process.exit(1); }
+
+  const data = await api("/api/v1/ask", "POST", { question: `Full analysis of ${ticker}`, deep: true });
+
+  output(data, d => {
+    console.log(`Deep Analysis: ${ticker}\n`);
+    if (d.summary) {
+      const clean = d.summary.replace(/[#*|]/g, "").replace(/\n{2,}/g, "\n").trim().slice(0, 500);
+      console.log(clean);
+    }
+    if (d.trade_signal) console.log(`\n  Signal: ${d.trade_signal.action?.toUpperCase()} (${d.trade_signal.score}/100)`);
+    if (d.verification_summary) console.log(`  Verified: ${d.verification_summary.steps_verified}/${d.verification_summary.steps_total} steps`);
+  });
+}
+
+async function cmdFeedback(args) {
+  const sessionIdx = args.indexOf("--session");
+  const reasonIdx = args.indexOf("--reason");
+  const detailIdx = args.indexOf("--detail");
+
+  const sessionId = sessionIdx >= 0 ? args[sessionIdx + 1] : null;
+  const reason = reasonIdx >= 0 ? args[reasonIdx + 1] : "manual";
+  const detail = detailIdx >= 0 ? args.slice(detailIdx + 1).join(" ") : args.filter(a => !a.startsWith("--")).join(" ");
+
+  if (!sessionId && !detail) { console.error("Usage: veroq feedback --session <id> --reason <reason> --detail <detail>"); process.exit(1); }
+
+  const data = await api("/api/v1/feedback", "POST", {
+    session_id: sessionId || "cli",
+    query: detail || "CLI feedback",
+    reason: reason || "manual",
+    detail: detail || "Submitted via CLI",
+  });
+
+  output(data, d => {
+    console.log(`Feedback submitted: ${d.feedback_id || "ok"}`);
+  });
+}
+
+async function cmdConsolidate(args) {
+  const agentId = args[0];
+  if (!agentId) { console.error("Usage: veroq consolidate <agent_id>"); process.exit(1); }
+
+  const data = await api("/api/v1/memory/consolidate", "POST", { agent_id: agentId });
+
+  output(data, d => {
+    console.log(`Consolidated: ${d.consolidated} memories → snapshot`);
+    if (d.tickers_covered?.length) console.log(`  Tickers: ${d.tickers_covered.join(", ")}`);
+    if (d.avg_confidence) console.log(`  Avg confidence: ${d.avg_confidence}`);
+  });
 }
