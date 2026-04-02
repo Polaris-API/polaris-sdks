@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { PolarisClient } from "polaris-news-api";
+import { VeroqClient } from "@veroq/sdk";
 
 export const veroqEvents = (options: { apiKey?: string } = {}) =>
   tool({
@@ -17,7 +17,7 @@ export const veroqEvents = (options: { apiKey?: string } = {}) =>
         .describe("Subject or entity to filter events for"),
     }),
     execute: async ({ type, subject }) => {
-      const client = new PolarisClient({ apiKey: options.apiKey });
+      const client = new VeroqClient({ apiKey: options.apiKey });
       return client.events({ type, subject });
     },
   });

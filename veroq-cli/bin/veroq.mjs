@@ -27,7 +27,7 @@
 //   JSON by default (agent-first). Use --human for formatted output.
 // ============================================================
 
-const API = process.env.VEROQ_API_URL || process.env.POLARIS_API_URL || "https://api.thepolarisreport.com";
+const API = process.env.VEROQ_API_URL || process.env.POLARIS_API_URL || "https://api.veroq.ai";
 const KEY = process.env.VEROQ_API_KEY || process.env.POLARIS_API_KEY || "";
 
 const args = process.argv.slice(2);
@@ -55,7 +55,7 @@ if (command === "version" || command === "--version") {
 if (!KEY && command !== "help") {
   console.error("Set your API key: export VEROQ_API_KEY=pr_live_xxx");
   console.error("  (or: export POLARIS_API_KEY=pr_live_xxx)");
-  console.error("Get one free at https://veroq.dev/pricing");
+  console.error("Get one free at https://veroq.ai/pricing");
   process.exit(1);
 }
 
@@ -416,7 +416,7 @@ AUTH
   # or (backwards compatible):
   export POLARIS_API_KEY=pr_live_xxx
 
-  Get a free key: https://veroq.dev/pricing
+  Get a free key: https://veroq.ai/pricing
 
 EXAMPLES
   veroq ask "How is NVDA doing?"

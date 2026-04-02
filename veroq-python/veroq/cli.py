@@ -14,7 +14,7 @@ import requests
 GITHUB_CLIENT_ID = "Ov23ligfgbZkJDvu8JwO"
 GITHUB_DEVICE_CODE_URL = "https://github.com/login/device/code"
 GITHUB_ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token"
-VEROQ_API_URL = "https://api.thepolarisreport.com"
+VEROQ_API_URL = "https://api.veroq.ai"
 CREDENTIALS_DIR = os.path.expanduser("~/.veroq")
 CREDENTIALS_FILE = os.path.join(CREDENTIALS_DIR, "credentials")
 # Backwards compatibility: also check legacy path

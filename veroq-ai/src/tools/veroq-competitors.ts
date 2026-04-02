@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { PolarisClient } from "polaris-news-api";
+import { VeroqClient } from "@veroq/sdk";
 
 export const veroqCompetitors = (options: { apiKey?: string } = {}) =>
   tool({
@@ -12,7 +12,7 @@ export const veroqCompetitors = (options: { apiKey?: string } = {}) =>
         .describe("Ticker symbol to get competitors for (e.g. NVDA)"),
     }),
     execute: async ({ symbol }) => {
-      const client = new PolarisClient({ apiKey: options.apiKey });
+      const client = new VeroqClient({ apiKey: options.apiKey });
       return client.competitors(symbol);
     },
   });

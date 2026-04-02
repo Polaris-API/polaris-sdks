@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { PolarisClient } from "polaris-news-api";
+import { VeroqClient } from "@veroq/sdk";
 
 export const veroqExtract = (options: { apiKey?: string } = {}) =>
   tool({
@@ -14,7 +14,7 @@ export const veroqExtract = (options: { apiKey?: string } = {}) =>
         .describe("URLs to extract article content from (1-5)"),
     }),
     execute: async ({ urls }) => {
-      const client = new PolarisClient({ apiKey: options.apiKey });
+      const client = new VeroqClient({ apiKey: options.apiKey });
       return client.extract(urls);
     },
   });

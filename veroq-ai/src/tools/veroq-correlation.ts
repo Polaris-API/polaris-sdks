@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { PolarisClient } from "polaris-news-api";
+import { VeroqClient } from "@veroq/sdk";
 
 export const veroqCorrelation = (options: { apiKey?: string } = {}) =>
   tool({
@@ -17,7 +17,7 @@ export const veroqCorrelation = (options: { apiKey?: string } = {}) =>
         .describe("Lookback period in days (default 30)"),
     }),
     execute: async ({ tickers, days }) => {
-      const client = new PolarisClient({ apiKey: options.apiKey });
+      const client = new VeroqClient({ apiKey: options.apiKey });
       return client.correlation(tickers, { days: days ?? 30 });
     },
   });

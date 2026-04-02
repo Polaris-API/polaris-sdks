@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { PolarisClient } from "polaris-news-api";
+import { VeroqClient } from "@veroq/sdk";
 
 export const veroqForecast = (options: { apiKey?: string } = {}) =>
   tool({
@@ -14,7 +14,7 @@ export const veroqForecast = (options: { apiKey?: string } = {}) =>
         .describe("Analysis depth"),
     }),
     execute: async ({ topic, depth }) => {
-      const client = new PolarisClient({ apiKey: options.apiKey });
+      const client = new VeroqClient({ apiKey: options.apiKey });
       return client.forecast(topic, { depth });
     },
   });

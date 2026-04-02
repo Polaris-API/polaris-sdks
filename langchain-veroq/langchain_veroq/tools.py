@@ -4,7 +4,7 @@ from typing import List, Optional, Type
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel, Field
 
-from polaris_news import PolarisClient
+from veroq import VeroqClient
 
 
 def _resolve_api_key(api_key: str = "") -> str:
@@ -30,7 +30,7 @@ class PolarisSearchTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, query: str, category: str = None, depth: str = None) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.search(query, category=category, depth=depth)
         if not result.briefs:
             return "No results found for '{}'.".format(query)
@@ -62,7 +62,7 @@ class PolarisFeedTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, category: str = None, limit: int = None, include_sources: str = None) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.feed(category=category, limit=limit, include_sources=include_sources)
         if not result.briefs:
             return "No briefs found."
@@ -88,7 +88,7 @@ class PolarisEntityTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, name: str) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         briefs = client.entity_briefs(name)
         if not briefs:
             return "No coverage found for entity '{}'.".format(name)
@@ -113,7 +113,7 @@ class PolarisBriefTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, brief_id: str, include_full_text: bool = None) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         b = client.brief(brief_id, include_full_text=include_full_text)
         parts = [b.headline or "Untitled"]
         if b.summary:
@@ -143,7 +143,7 @@ class PolarisTimelineTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, brief_id: str) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.timeline(brief_id)
         if not result:
             return "No timeline found for brief '{}'.".format(brief_id)
@@ -168,7 +168,7 @@ class PolarisExtractTool(BaseTool):
         url_list = [u.strip() for u in urls.split(",") if u.strip()]
         if not url_list:
             return "No URLs provided."
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.extract(url_list[:5])
         lines = []
         for r in result.results:
@@ -199,7 +199,7 @@ class PolarisResearchTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, query: str, category: str = None, max_sources: int = None) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.research(query, category=category, max_sources=max_sources)
         lines = []
         if result.report:
@@ -243,7 +243,7 @@ class PolarisVerifyTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, claim: str, context: str = None) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.verify(claim, context=context)
         lines = ["Verdict: {} (confidence: {:.0%})".format(result.verdict, result.confidence)]
         if result.summary:
@@ -277,7 +277,7 @@ class PolarisCompareTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, topic: str) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         search_result = client.search(topic, per_page=1)
         if not search_result.briefs:
             return "No coverage found for topic '{}'.".format(topic)
@@ -313,7 +313,7 @@ class PolarisForecastTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, topic: str, depth: str = None) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.forecast(topic, depth=depth)
         import json
         return json.dumps(result, indent=2, default=str)
@@ -333,7 +333,7 @@ class PolarisContradictionsTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, severity: str = None) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.contradictions(severity=severity)
         import json
         return json.dumps(result, indent=2, default=str)
@@ -354,7 +354,7 @@ class PolarisEventsTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, type: str = None, subject: str = None) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.events(type=type, subject=subject)
         import json
         return json.dumps(result, indent=2, default=str)
@@ -378,7 +378,7 @@ class PolarisWebSearchTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, query: str, limit: int = None, freshness: str = None, region: str = None, verify: bool = None) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.web_search(query, limit=limit or 5, freshness=freshness, region=region, verify=verify or False)
         import json
         return json.dumps(result, indent=2, default=str)
@@ -401,7 +401,7 @@ class PolarisCrawlTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, url: str, depth: int = None, max_pages: int = None, include_links: bool = None) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.crawl(url, depth=depth or 1, max_pages=max_pages or 5, include_links=include_links if include_links is not None else True)
         import json
         return json.dumps(result, indent=2, default=str)
@@ -421,7 +421,7 @@ class PolarisTrendingTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, limit: int = None) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         entities = client.trending_entities(limit=limit)
         if not entities:
             return "No trending entities found."
@@ -449,7 +449,7 @@ class PolarisTickerResolveTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, symbols: str) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.ticker_resolve(symbols)
         resolved = result.get("resolved", [])
         unresolved = result.get("unresolved", [])
@@ -485,7 +485,7 @@ class PolarisTickerTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, symbol: str) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.ticker(symbol)
         if result.get("status") != "ok":
             return "Ticker '{}' not found.".format(symbol)
@@ -519,7 +519,7 @@ class PolarisTickerScoreTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, symbol: str) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.ticker_score(symbol)
         if result.get("status") != "ok":
             return "Could not compute score for '{}'.".format(symbol)
@@ -577,7 +577,7 @@ class PolarisSectorsTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, days: int = None) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.sectors(days=days or 7)
         sectors = result.get("sectors", [])
         if not sectors:
@@ -618,7 +618,7 @@ class PolarisPortfolioFeedTool(BaseTool):
             return "Invalid holdings JSON. Expected format: [{\"ticker\":\"NVDA\",\"weight\":0.3}, ...]"
         if not isinstance(holdings_list, list) or not holdings_list:
             return "Holdings must be a non-empty JSON array of {\"ticker\": ..., \"weight\": ...} objects."
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.portfolio_feed(holdings_list, days=days or 7, limit=limit or 30)
         lines = []
         # Portfolio summary
@@ -669,7 +669,7 @@ class PolarisEventsCalendarTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, ticker: str = None, type: str = None, days: int = None, limit: int = None) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.events_calendar(
             days=days or 30,
             ticker=ticker,
@@ -721,7 +721,7 @@ class PolarisCandlesTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, symbol: str, interval: str = None, range: str = None) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.candles(symbol, interval=interval or '1d', range=range or '6mo')
         candles = result.get("candles", [])
         if not candles:
@@ -761,7 +761,7 @@ class PolarisTechnicalsTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, symbol: str, range: str = None) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.technicals(symbol, range=range or '6mo')
         ticker = result.get("ticker", symbol)
         summary = result.get("summary", {})
@@ -803,7 +803,7 @@ class PolarisMarketMoversTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.market_movers()
         lines = ["Market Movers"]
         for section, label in [("gainers", "Top Gainers"), ("losers", "Top Losers"), ("most_active", "Most Active")]:
@@ -835,7 +835,7 @@ class PolarisEconomyTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, indicator: str = None, limit: int = None) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.economy(indicator=indicator, limit=limit)
         if indicator:
             lines = ["{} ({})".format(result.get("name", indicator), result.get("indicator", indicator))]
@@ -881,7 +881,7 @@ class PolarisCryptoTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, symbol: str = None) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.crypto(symbol=symbol)
         if symbol:
             lines = ["{} — {}".format(
@@ -938,7 +938,7 @@ class PolarisBacktestTool(BaseTool):
             strategy_obj = _json.loads(strategy)
         except (_json.JSONDecodeError, TypeError):
             return "Invalid strategy JSON. Expected format: {\"entry_filters\": {...}, \"exit_filters\": {...}}"
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.backtest(strategy_obj, period=period or '1y')
         perf = result.get("performance", {})
         lines = ["Backtest Results ({} period):".format(result.get("period", period or "1y"))]
@@ -968,7 +968,7 @@ class PolarisCorrelationTool(BaseTool):
         ticker_list = [t.strip() for t in tickers.split(",") if t.strip()]
         if len(ticker_list) < 2:
             return "At least 2 tickers are required for correlation analysis."
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.correlation(ticker_list, days=days or 30)
         lines = ["Correlation Matrix ({} day lookback):".format(result.get("period_days", days or 30))]
         matrix = result.get("matrix", [])
@@ -997,7 +997,7 @@ class PolarisScreenerTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, query: str, limit: int = None) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.screener_natural(query, limit=limit)
         results = result.get("results", [])
         if not results:
@@ -1027,7 +1027,7 @@ class PolarisNewsImpactTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, symbol: str) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.news_impact(symbol)
         import json
         return json.dumps(result, indent=2, default=str)
@@ -1047,7 +1047,7 @@ class PolarisCompetitorsTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, symbol: str) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.competitors(symbol)
         competitors = result.get("competitors", [])
         if not competitors:
@@ -1080,7 +1080,7 @@ class PolarisDefiTool(BaseTool):
         super().__init__(api_key=_resolve_api_key(api_key), **kwargs)
 
     def _run(self, protocol: str = None) -> str:
-        client = PolarisClient(api_key=self.api_key)
+        client = VeroqClient(api_key=self.api_key)
         result = client.crypto_defi(protocol=protocol)
         if protocol:
             lines = ["{} — DeFi Protocol".format(result.get("name", protocol))]
@@ -1134,7 +1134,7 @@ class PolarisAskTool(BaseTool):
     def _run(self, question: str) -> str:
         import requests
         resp = requests.post(
-            "https://api.thepolarisreport.com/api/v1/ask",
+            "https://api.veroq.ai/api/v1/ask",
             headers={"Authorization": "Bearer {}".format(self.api_key)},
             json={"question": question},
         )
@@ -1169,7 +1169,7 @@ class PolarisFullTool(BaseTool):
         import requests
         import json
         resp = requests.get(
-            "https://api.thepolarisreport.com/api/v1/ticker/{}/full".format(symbol),
+            "https://api.veroq.ai/api/v1/ticker/{}/full".format(symbol),
             headers={"Authorization": "Bearer {}".format(self.api_key)},
         )
         data = resp.json()
@@ -1243,7 +1243,7 @@ class PolarisInsiderTool(BaseTool):
         import requests
         import json
         resp = requests.get(
-            "https://api.thepolarisreport.com/api/v1/ticker/{}/insider".format(symbol),
+            "https://api.veroq.ai/api/v1/ticker/{}/insider".format(symbol),
             headers={"Authorization": "Bearer {}".format(self.api_key)},
         )
         data = resp.json()
@@ -1283,7 +1283,7 @@ class PolarisFilingsTool(BaseTool):
     def _run(self, symbol: str) -> str:
         import requests
         resp = requests.get(
-            "https://api.thepolarisreport.com/api/v1/ticker/{}/filings".format(symbol),
+            "https://api.veroq.ai/api/v1/ticker/{}/filings".format(symbol),
             headers={"Authorization": "Bearer {}".format(self.api_key)},
         )
         data = resp.json()
@@ -1323,7 +1323,7 @@ class PolarisAnalystsTool(BaseTool):
     def _run(self, symbol: str) -> str:
         import requests
         resp = requests.get(
-            "https://api.thepolarisreport.com/api/v1/ticker/{}/analysts".format(symbol),
+            "https://api.veroq.ai/api/v1/ticker/{}/analysts".format(symbol),
             headers={"Authorization": "Bearer {}".format(self.api_key)},
         )
         data = resp.json()
@@ -1382,7 +1382,7 @@ class PolarisCongressTool(BaseTool):
         if limit:
             params["limit"] = limit
         resp = requests.get(
-            "https://api.thepolarisreport.com/api/v1/congress/trades",
+            "https://api.veroq.ai/api/v1/congress/trades",
             headers={"Authorization": "Bearer {}".format(self.api_key)},
             params=params,
         )
@@ -1424,7 +1424,7 @@ class PolarisInstitutionsTool(BaseTool):
     def _run(self, symbol: str) -> str:
         import requests
         resp = requests.get(
-            "https://api.thepolarisreport.com/api/v1/ticker/{}/institutions".format(symbol),
+            "https://api.veroq.ai/api/v1/ticker/{}/institutions".format(symbol),
             headers={"Authorization": "Bearer {}".format(self.api_key)},
         )
         data = resp.json()
@@ -1473,7 +1473,7 @@ class PolarisRunAgentTool(BaseTool):
             except (_json.JSONDecodeError, TypeError):
                 return "Invalid params JSON. Expected a JSON object."
         resp = requests.post(
-            "https://api.thepolarisreport.com/api/v1/agents/run/{}".format(slug),
+            "https://api.veroq.ai/api/v1/agents/run/{}".format(slug),
             headers={"Authorization": "Bearer {}".format(self.api_key)},
             json=body,
         )

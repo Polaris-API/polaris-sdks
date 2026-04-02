@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { PolarisClient } from "polaris-news-api";
+import { VeroqClient } from "@veroq/sdk";
 
 export const veroqContradictions = (options: { apiKey?: string } = {}) =>
   tool({
@@ -13,7 +13,7 @@ export const veroqContradictions = (options: { apiKey?: string } = {}) =>
         .describe("Filter by severity level (e.g. high, medium, low)"),
     }),
     execute: async ({ severity }) => {
-      const client = new PolarisClient({ apiKey: options.apiKey });
+      const client = new VeroqClient({ apiKey: options.apiKey });
       return client.contradictions({ severity });
     },
   });

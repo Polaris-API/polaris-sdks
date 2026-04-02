@@ -1,6 +1,6 @@
 export { VeroqClient, PolarisClient } from "./client.js";
 export { Agent } from "./agent.js";
-export { shield, ShieldResult, type ShieldOptions, type ShieldClaim } from "./shield.js";
+export { shield, ShieldResult, CachedShield, type ShieldOptions, type ShieldClaim, type CachedShieldOptions, type CachedShieldStats } from "./shield.js";
 export { shieldOpenAI, shieldAnthropic, shieldMiddleware } from "./middleware.js";
 export type { AskResult, FullResult, SubscribeEvent, AgentOptions } from "./agent.js";
 export {

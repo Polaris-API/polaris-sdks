@@ -8,7 +8,7 @@ import { exec } from "child_process";
 const GITHUB_CLIENT_ID = "Ov23ligfgbZkJDvu8JwO";
 const GITHUB_DEVICE_CODE_URL = "https://github.com/login/device/code";
 const GITHUB_ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token";
-const VEROQ_API_URL = "https://api.thepolarisreport.com";
+const VEROQ_API_URL = "https://api.veroq.ai";
 const CREDENTIALS_DIR = join(homedir(), ".veroq");
 const CREDENTIALS_FILE = join(CREDENTIALS_DIR, "credentials");
 // Legacy fallback

@@ -17,6 +17,7 @@
  * ```
  */
 
+import { createHash } from "node:crypto";
 import { VeroqClient } from "./client.js";
 import { VeroqError } from "./errors.js";
 
@@ -29,6 +30,8 @@ export interface ShieldOptions {
   maxClaims?: number;
   /** API key override */
   apiKey?: string;
+  /** API base URL override */
+  baseUrl?: string;
   /** If true, throws VeroqError when claims are contradicted */
   blockIfUntrusted?: boolean;
 }
@@ -128,9 +131,9 @@ export class ShieldResult {
 // Module-level client
 let _client: VeroqClient | null = null;
 
-function getClient(apiKey?: string): VeroqClient {
+function getClient(apiKey?: string, baseUrl?: string): VeroqClient {
   if (!_client || apiKey) {
-    _client = new VeroqClient({ apiKey });
+    _client = new VeroqClient({ apiKey, baseUrl });
   }
   return _client;
 }
@@ -169,7 +172,7 @@ export async function shield(text: string, options: ShieldOptions = {}): Promise
     });
   }
 
-  const client = getClient(options.apiKey);
+  const client = getClient(options.apiKey, options.baseUrl);
 
   const raw = await client.verifyOutput(text, {
     source: options.source,
@@ -196,4 +199,149 @@ export async function shield(text: string, options: ShieldOptions = {}): Promise
   }
 
   return result;
+}
+
+export interface CachedShieldOptions {
+  /** Maximum entries in the LRU cache (default 500) */
+  maxCache?: number;
+  /** Time-to-live for cached results in milliseconds (default 3_600_000 = 1 hour) */
+  ttlMs?: number;
+  /** API key override */
+  apiKey?: string;
+  /** API base URL override */
+  baseUrl?: string;
+}
+
+export interface CachedShieldStats {
+  hits: number;
+  misses: number;
+  hitRate: number;
+  size: number;
+}
+
+interface CacheEntry {
+  result: ShieldResult;
+  timestamp: number;
+}
+
+/**
+ * Lightweight shield with local caching for repeated verifications.
+ *
+ * Caches results by SHA-256 hash of text. Reduces API calls for repeated or
+ * similar content. Useful for high-volume pipelines or edge/offline scenarios.
+ *
+ * @example
+ * ```typescript
+ * import { CachedShield } from "@veroq/sdk";
+ *
+ * const cached = new CachedShield({ maxCache: 1000, ttlMs: 30 * 60_000 });
+ * const r1 = await cached.shield("NVIDIA reported $22B in Q4 revenue"); // API call
+ * const r2 = await cached.shield("NVIDIA reported $22B in Q4 revenue"); // instant cache hit
+ * console.log(cached.stats()); // { hits: 1, misses: 1, hitRate: 0.5, size: 1 }
+ * ```
+ */
+export class CachedShield {
+  private readonly _maxCache: number;
+  private readonly _ttlMs: number;
+  private readonly _apiKey?: string;
+  private readonly _baseUrl?: string;
+  private readonly _cache: Map<string, CacheEntry> = new Map();
+  private readonly _inFlight: Map<string, Promise<ShieldResult>> = new Map();
+  private _hits = 0;
+  private _misses = 0;
+  private _lastEvict = 0;
+
+  constructor(options: CachedShieldOptions = {}) {
+    this._maxCache = Math.max(1, options.maxCache ?? 500);
+    this._ttlMs = Math.max(1, options.ttlMs ?? 3_600_000);
+    this._apiKey = options.apiKey;
+    this._baseUrl = options.baseUrl;
+  }
+
+  private static _hashText(text: string): string {
+    return createHash("sha256").update(text, "utf8").digest("hex");
+  }
+
+  private _evictExpired(): void {
+    const now = Date.now();
+    for (const [key, entry] of this._cache) {
+      if (now - entry.timestamp > this._ttlMs) {
+        this._cache.delete(key);
+      }
+    }
+  }
+
+  private _evictLru(): void {
+    // Map iteration order is insertion order; oldest entries are first.
+    while (this._cache.size > this._maxCache) {
+      const firstKey = this._cache.keys().next().value!;
+      this._cache.delete(firstKey);
+    }
+  }
+
+  /**
+   * Verify text using cached shield.
+   *
+   * Checks local cache first (by SHA-256 of text). On miss, calls the
+   * regular shield() function and stores the result. Deduplicates
+   * concurrent calls for the same text.
+   */
+  async shield(text: string, options: ShieldOptions = {}): Promise<ShieldResult> {
+    const key = CachedShield._hashText(text);
+
+    // Amortize TTL eviction — run at most once per second
+    const now = Date.now();
+    if (now - this._lastEvict > 1000) {
+      this._evictExpired();
+      this._lastEvict = now;
+    }
+
+    const cached = this._cache.get(key);
+    if (cached) {
+      // Move to end (most recently used) by re-inserting
+      this._cache.delete(key);
+      this._cache.set(key, cached);
+      this._hits++;
+      return cached.result;
+    }
+
+    // Deduplicate concurrent calls for the same text (counts as a miss, not a hit)
+    const inflight = this._inFlight.get(key);
+    if (inflight) {
+      return inflight;
+    }
+
+    // Cache miss — call API and share the Promise with any concurrent callers
+    this._misses++;
+    const promise = shield(text, { ...options, apiKey: this._apiKey ?? options.apiKey, baseUrl: this._baseUrl ?? options.baseUrl });
+    this._inFlight.set(key, promise);
+
+    try {
+      const result = await promise;
+      this._cache.set(key, { result, timestamp: Date.now() });
+      this._evictLru();
+      return result;
+    } finally {
+      this._inFlight.delete(key);
+    }
+  }
+
+  /** Return cache hit/miss statistics. */
+  stats(): CachedShieldStats {
+    const total = this._hits + this._misses;
+    return {
+      hits: this._hits,
+      misses: this._misses,
+      hitRate: total > 0 ? this._hits / total : 0,
+      size: this._cache.size,
+    };
+  }
+
+  /** Clear the cache and reset stats. */
+  clear(): void {
+    this._cache.clear();
+    this._inFlight.clear();
+    this._hits = 0;
+    this._misses = 0;
+  }
 }

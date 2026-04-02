@@ -122,7 +122,7 @@ import type {
   TranscriptsResponse,
 } from "./types.js";
 
-const DEFAULT_BASE_URL = "https://api.thepolarisreport.com";
+const DEFAULT_BASE_URL = "https://api.veroq.ai";
 
 function toSnakeCase(str: string): string {
   return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
@@ -395,6 +395,33 @@ export class VeroqClient {
       agent_id: agentId,
       max_age_hours: options.maxAgeHours ?? 24,
       keep_recent: options.keepRecent ?? 10,
+    });
+  }
+
+  /** Configure autonomous self-monitoring for an agent */
+  async agentAutoMonitor(agentId: string, options: {
+    trustThreshold?: number; checkIntervalHours?: number;
+    alertWebhook?: string; escalateOnLowTrust?: boolean;
+  } = {}): Promise<Record<string, any>> {
+    if (!agentId?.trim()) throw new Error("agentId is required and must be a non-empty string");
+    const threshold = options.trustThreshold ?? 0.7;
+    const interval = options.checkIntervalHours ?? 6;
+    if (threshold < 0 || threshold > 1) throw new Error("trustThreshold must be between 0 and 1");
+    if (interval < 1 || interval > 168) throw new Error("checkIntervalHours must be between 1 and 168");
+    return this.request("POST", "/api/v1/agent/auto-monitor", undefined, {
+      agent_id: agentId,
+      trust_threshold: threshold,
+      check_interval_hours: interval,
+      alert_webhook: options.alertWebhook,
+      escalate_on_low_trust: options.escalateOnLowTrust ?? true,
+    });
+  }
+
+  /** Manually trigger a health check for an agent */
+  async agentHealthCheck(agentId: string): Promise<Record<string, any>> {
+    if (!agentId?.trim()) throw new Error("agentId is required and must be a non-empty string");
+    return this.request("POST", "/api/v1/agent/health-check", undefined, {
+      agent_id: agentId,
     });
   }
 

@@ -1,9 +1,9 @@
 /**
  * Shared helper for tools that call the VEROQ API directly
- * (used when the polaris-news-api SDK client doesn't yet expose the method).
+ * (used when the @veroq/sdk client doesn't yet expose the method).
  */
 
-const DEFAULT_BASE_URL = "https://api.thepolarisreport.com";
+const DEFAULT_BASE_URL = "https://api.veroq.ai";
 
 declare const fetch: (url: string, init?: { method?: string; headers?: Record<string, string>; body?: string }) => Promise<{
   ok: boolean;

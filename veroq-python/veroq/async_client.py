@@ -26,7 +26,7 @@ from .types import (
 class AsyncVeroqClient:
     """Async client for the VEROQ API — verified intelligence for AI agents."""
 
-    DEFAULT_BASE_URL = "https://api.thepolarisreport.com"
+    DEFAULT_BASE_URL = "https://api.veroq.ai"
 
     def __init__(self, api_key=None, base_url=None):
         self.api_key = api_key or _read_credentials()

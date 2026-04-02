@@ -104,7 +104,7 @@ class Agent:
     def __init__(
         self,
         api_key: Optional[str] = None,
-        base_url: str = "https://api.thepolarisreport.com",
+        base_url: str = "https://api.veroq.ai",
         timeout: int = 30,
     ):
         # Support both VEROQ_API_KEY and POLARIS_API_KEY for backwards compatibility

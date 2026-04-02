@@ -56,11 +56,11 @@
   "homepage": "https://veroq.ai",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Polaris-API/polaris-sdks",
+    "url": "https://github.com/Veroq-api/veroq-sdk",
     "directory": "veroq-sdk"
   },
   "bugs": {
-    "url": "https://github.com/Polaris-API/polaris-sdks/issues"
+    "url": "https://github.com/Veroq-api/veroq-sdk/issues"
   },
   "engines": {
     "node": ">=18"

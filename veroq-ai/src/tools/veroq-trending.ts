@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { PolarisClient } from "polaris-news-api";
+import { VeroqClient } from "@veroq/sdk";
 
 export const veroqTrending = (options: { apiKey?: string } = {}) =>
   tool({
@@ -13,7 +13,7 @@ export const veroqTrending = (options: { apiKey?: string } = {}) =>
         .describe("Max entities to return (default 10)"),
     }),
     execute: async ({ limit }) => {
-      const client = new PolarisClient({ apiKey: options.apiKey });
+      const client = new VeroqClient({ apiKey: options.apiKey });
       return client.trendingEntities(limit);
     },
   });

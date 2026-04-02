@@ -5,7 +5,7 @@ import {
   INodeTypeDescription,
 } from 'n8n-workflow';
 
-const BASE_URL = 'https://api.thepolarisreport.com';
+const BASE_URL = 'https://api.veroq.ai';
 
 export class Veroq implements INodeType {
   description: INodeTypeDescription = {

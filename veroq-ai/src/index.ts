@@ -118,7 +118,7 @@ import { veroqRunAgent as _runAgent } from "./tools/veroq-run-agent.js";
 
 /**
  * Returns all VEROQ tools in a single object, ready to pass to `generateText({ tools })`.
- * Optionally pass `{ apiKey }` to authenticate — otherwise uses POLARIS_API_KEY env var.
+ * Optionally pass `{ apiKey }` to authenticate — otherwise uses VEROQ_API_KEY env var.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function veroqTools(options: { apiKey?: string } = {}): Record<string, any> {

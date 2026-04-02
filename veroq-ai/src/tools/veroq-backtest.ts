@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { PolarisClient } from "polaris-news-api";
+import { VeroqClient } from "@veroq/sdk";
 
 export const veroqBacktest = (options: { apiKey?: string } = {}) =>
   tool({
@@ -19,7 +19,7 @@ export const veroqBacktest = (options: { apiKey?: string } = {}) =>
         .describe("Backtest period (e.g. 1y, 6mo, 3mo). Default: 1y"),
     }),
     execute: async ({ strategy, period }) => {
-      const client = new PolarisClient({ apiKey: options.apiKey });
+      const client = new VeroqClient({ apiKey: options.apiKey });
       return client.backtest(strategy as any, { period: period ?? "1y" });
     },
   });

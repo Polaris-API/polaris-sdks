@@ -22,9 +22,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Polaris-API/veroq-cli.git"
+    "url": "git+https://github.com/Veroq-api/veroq-cli.git"
   },
-  "homepage": "https://veroq.dev",
+  "homepage": "https://veroq.ai",
   "engines": {
     "node": ">=18"
   }

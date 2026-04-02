@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { PolarisClient } from "polaris-news-api";
+import { VeroqClient } from "@veroq/sdk";
 
 export const veroqSearch = (options: { apiKey?: string } = {}) =>
   tool({
@@ -22,7 +22,7 @@ export const veroqSearch = (options: { apiKey?: string } = {}) =>
         .describe("Max results to return (default 10)"),
     }),
     execute: async ({ query, category, depth, limit }) => {
-      const client = new PolarisClient({ apiKey: options.apiKey });
+      const client = new VeroqClient({ apiKey: options.apiKey });
       return client.search(query, { category, depth, perPage: limit });
     },
   });

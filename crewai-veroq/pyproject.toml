@@ -23,11 +23,11 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
-    "polaris-news>=0.2.0",
+    "veroq>=2.0.0",
     "crewai>=0.80.0",
 ]
 
 [project.urls]
 Homepage = "https://veroq.ai"
 Documentation = "https://veroq.ai/docs"
-Repository = "https://github.com/Polaris-API/crewai-veroq"
+Repository = "https://github.com/Veroq-api/crewai-veroq"

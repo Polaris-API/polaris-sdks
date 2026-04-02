@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { PolarisClient } from "polaris-news-api";
+import { VeroqClient } from "@veroq/sdk";
 
 export const veroqScreener = (options: { apiKey?: string } = {}) =>
   tool({
@@ -16,7 +16,7 @@ export const veroqScreener = (options: { apiKey?: string } = {}) =>
         .describe("Max results to return (default 20)"),
     }),
     execute: async ({ query, limit }) => {
-      const client = new PolarisClient({ apiKey: options.apiKey });
+      const client = new VeroqClient({ apiKey: options.apiKey });
       return client.screenerNatural(query, { limit });
     },
   });

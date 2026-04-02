@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { PolarisClient } from "polaris-news-api";
+import { VeroqClient } from "@veroq/sdk";
 
 export const veroqCrawl = (options: { apiKey?: string } = {}) =>
   tool({
@@ -22,7 +22,7 @@ export const veroqCrawl = (options: { apiKey?: string } = {}) =>
         .describe("Include extracted links in response"),
     }),
     execute: async ({ url, depth, max_pages, include_links }) => {
-      const client = new PolarisClient({ apiKey: options.apiKey });
+      const client = new VeroqClient({ apiKey: options.apiKey });
       return client.crawl(url, { depth, max_pages, include_links });
     },
   });

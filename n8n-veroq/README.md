@@ -2,7 +2,7 @@
 
 > **New:** VeroQ 2.0 adds Verified Swarm (multi-agent pipelines), Agent Runtime (finance/legal/research/compliance verticals), and secure external MCP integration. Available via the [MCP server](https://www.npmjs.com/package/veroq-mcp) and [SDKs](https://veroq.ai/docs).
 
-n8n community node for the [VEROQ Intelligence API](https://veroq.co).
+n8n community node for the [VEROQ Intelligence API](https://veroq.ai).
 
 Verified, bias-scored financial intelligence for AI agents and automation workflows.
 
@@ -18,7 +18,7 @@ n8n-nodes-veroq
 
 Add a **VEROQ API** credential with your API key. Both VEROQ and Polaris API keys are accepted.
 
-Get a free key at [veroq.co/dashboard](https://veroq.co/dashboard).
+Get a free key at [veroq.ai/dashboard](https://veroq.ai/dashboard).
 
 ## Quick Start
 
@@ -68,6 +68,6 @@ These handle most use cases. The other resources give you granular access when y
 
 ## Links
 
-- [API Documentation](https://veroq.co/docs)
-- [Get API Key](https://veroq.co/dashboard)
-- [GitHub](https://github.com/Polaris-API/polaris-sdks)
+- [API Documentation](https://veroq.ai/docs)
+- [Get API Key](https://veroq.ai/dashboard)
+- [GitHub](https://github.com/Veroq-api/polaris-sdks)

@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { PolarisClient } from "polaris-news-api";
+import { VeroqClient } from "@veroq/sdk";
 
 export const veroqEventsCalendar = (options: { apiKey?: string } = {}) =>
   tool({
@@ -25,7 +25,7 @@ export const veroqEventsCalendar = (options: { apiKey?: string } = {}) =>
         .describe("Max events to return (default 30)"),
     }),
     execute: async ({ ticker, type, days, limit }) => {
-      const client = new PolarisClient({ apiKey: options.apiKey });
+      const client = new VeroqClient({ apiKey: options.apiKey });
       return client.eventsCalendar({ ticker, type, days, limit });
     },
   });

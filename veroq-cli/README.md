@@ -49,7 +49,7 @@ veroq ask "NVDA earnings" --human
 
 ## Auth
 
-Get a free API key at [veroq.dev/pricing](https://veroq.dev/pricing) (1,000 credits/month free).
+Get a free API key at [veroq.ai/pricing](https://veroq.ai/pricing) (1,000 credits/month free).
 
 ```bash
 export VEROQ_API_KEY=pr_live_xxx
@@ -79,7 +79,7 @@ npm install -g @veroq/cli
 
 ## Links
 
-- [Documentation](https://veroq.dev/docs)
-- [Interactive Demo](https://veroq.dev/ask)
-- [Python SDK](https://pypi.org/project/polaris-news/)
-- [TypeScript SDK](https://www.npmjs.com/package/polaris-news-api)
+- [Documentation](https://veroq.ai/docs)
+- [Interactive Demo](https://veroq.ai/ask)
+- [Python SDK](https://pypi.org/project/veroq/)
+- [TypeScript SDK](https://www.npmjs.com/package/@veroq/sdk)

@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { PolarisClient } from "polaris-news-api";
+import { VeroqClient } from "@veroq/sdk";
 
 export const veroqFeed = (options: { apiKey?: string } = {}) =>
   tool({
@@ -17,7 +17,7 @@ export const veroqFeed = (options: { apiKey?: string } = {}) =>
         .describe("Max briefs to return (default 20)"),
     }),
     execute: async ({ category, limit }) => {
-      const client = new PolarisClient({ apiKey: options.apiKey });
+      const client = new VeroqClient({ apiKey: options.apiKey });
       return client.agentFeed({ category, limit });
     },
   });

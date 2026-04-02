@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { PolarisClient } from "polaris-news-api";
+import { VeroqClient } from "@veroq/sdk";
 
 export const veroqVerify = (options: { apiKey?: string } = {}) =>
   tool({
@@ -18,7 +18,7 @@ export const veroqVerify = (options: { apiKey?: string } = {}) =>
         .describe("Category to narrow the search (e.g. 'tech', 'policy')"),
     }),
     execute: async ({ claim, context }) => {
-      const client = new PolarisClient({ apiKey: options.apiKey });
+      const client = new VeroqClient({ apiKey: options.apiKey });
       return client.verify(claim, { context });
     },
   });

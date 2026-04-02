@@ -3,7 +3,7 @@ __version__ = "1.0.0"
 from .client import VeroqClient
 from .agent import Agent, AskResult, FullResult, SubscribeEvent
 from .exceptions import APIError, AuthenticationError, NotFoundError, VeroqError, RateLimitError
-from .shield import shield, ShieldResult
+from .shield import shield, ShieldResult, CachedShield
 from .middleware import openai_shield, anthropic_shield, shield_wrap
 from .types import (
     Brief,
@@ -88,4 +88,5 @@ __all__ = [
     "VerifyResponse",
     "shield",
     "ShieldResult",
+    "CachedShield",
 ]

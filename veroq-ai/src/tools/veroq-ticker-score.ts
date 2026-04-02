@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { PolarisClient } from "polaris-news-api";
+import { VeroqClient } from "@veroq/sdk";
 
 export const veroqTickerScore = (options: { apiKey?: string } = {}) =>
   tool({
@@ -12,7 +12,7 @@ export const veroqTickerScore = (options: { apiKey?: string } = {}) =>
         .describe("Ticker symbol to score (e.g. AAPL)"),
     }),
     execute: async ({ symbol }) => {
-      const client = new PolarisClient({ apiKey: options.apiKey });
+      const client = new VeroqClient({ apiKey: options.apiKey });
       return client.tickerScore(symbol);
     },
   });

@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { PolarisClient } from "polaris-news-api";
+import { VeroqClient } from "@veroq/sdk";
 
 export const veroqTickerHistory = (options: { apiKey?: string } = {}) =>
   tool({
@@ -16,7 +16,7 @@ export const veroqTickerHistory = (options: { apiKey?: string } = {}) =>
         .describe("Number of days of history to return (default 30)"),
     }),
     execute: async ({ symbol, days }) => {
-      const client = new PolarisClient({ apiKey: options.apiKey });
+      const client = new VeroqClient({ apiKey: options.apiKey });
       return client.tickerHistory(symbol, { days });
     },
   });

@@ -26,14 +26,14 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "polaris-news>=0.6.0",
+    "veroq>=2.0.0",
     "langchain-core>=0.1.0",
 ]
 
 [project.urls]
 Homepage = "https://veroq.ai"
 Documentation = "https://veroq.ai/docs"
-Repository = "https://github.com/Polaris-API/langchain-veroq"
+Repository = "https://github.com/Veroq-api/langchain-veroq"
 
 [tool.hatch.build.targets.wheel]
 packages = ["langchain_veroq"]

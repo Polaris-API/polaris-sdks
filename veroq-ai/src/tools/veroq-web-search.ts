@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { PolarisClient } from "polaris-news-api";
+import { VeroqClient } from "@veroq/sdk";
 
 export const veroqWebSearch = (options: { apiKey?: string } = {}) =>
   tool({
@@ -26,7 +26,7 @@ export const veroqWebSearch = (options: { apiKey?: string } = {}) =>
         .describe("Enable VEROQ trust scoring on results"),
     }),
     execute: async ({ query, limit, freshness, region, verify }) => {
-      const client = new PolarisClient({ apiKey: options.apiKey });
+      const client = new VeroqClient({ apiKey: options.apiKey });
       return client.webSearch(query, { limit, freshness, region, verify });
     },
   });

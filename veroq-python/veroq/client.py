@@ -48,7 +48,7 @@ from .types import (
 class VeroqClient:
     """Client for the VEROQ API — verified intelligence for AI agents."""
 
-    DEFAULT_BASE_URL = "https://api.thepolarisreport.com"
+    DEFAULT_BASE_URL = "https://api.veroq.ai"
 
     def __init__(self, api_key=None, base_url=None):
         self.api_key = api_key or _read_credentials()
@@ -183,6 +183,56 @@ class VeroqClient:
         return self._request("POST", "/api/v1/memory/consolidate", json_body={
             "agent_id": agent_id, "max_age_hours": max_age_hours, "keep_recent": keep_recent,
         })
+
+    def agent_auto_monitor(self, agent_id, trust_threshold=0.7, check_interval_hours=6, alert_webhook=None, escalate_on_low_trust=True):
+        """Configure autonomous self-monitoring for an agent.
+
+        Sets up continuous health monitoring with configurable thresholds
+        and escalation behavior.
+
+        Args:
+            agent_id: Unique identifier for your agent.
+            trust_threshold: Confidence threshold below which the agent is degraded (0-1, default 0.7).
+            check_interval_hours: How often to check (1-168, default 6).
+            alert_webhook: Optional webhook URL for alerts (must be HTTPS).
+            escalate_on_low_trust: Auto-escalate when trust drops below threshold (default True).
+
+        Raises:
+            ValueError: If agent_id is empty, trust_threshold out of range, or check_interval_hours out of range.
+        """
+        if not agent_id or not isinstance(agent_id, str) or not agent_id.strip():
+            raise ValueError("agent_id is required and must be a non-empty string")
+        if not (0 <= trust_threshold <= 1):
+            raise ValueError("trust_threshold must be between 0 and 1")
+        if not (1 <= check_interval_hours <= 168):
+            raise ValueError("check_interval_hours must be between 1 and 168")
+        body = {
+            "agent_id": agent_id,
+            "trust_threshold": trust_threshold,
+            "check_interval_hours": check_interval_hours,
+            "escalate_on_low_trust": escalate_on_low_trust,
+        }
+        if alert_webhook:
+            body["alert_webhook"] = alert_webhook
+        return self._request("POST", "/api/v1/agent/auto-monitor", json_body=body)
+
+    def agent_health_check(self, agent_id):
+        """Manually trigger a health check for an agent.
+
+        Analyzes all signal/verification memories and returns a health
+        report with avg confidence, trust trend, stale facts, and
+        contradicted claims. Returns status "degraded" with action
+        "escalate" if trust is below the configured threshold.
+
+        Args:
+            agent_id: Unique identifier for the agent to check.
+
+        Raises:
+            ValueError: If agent_id is empty.
+        """
+        if not agent_id or not isinstance(agent_id, str) or not agent_id.strip():
+            raise ValueError("agent_id is required and must be a non-empty string")
+        return self._request("POST", "/api/v1/agent/health-check", json_body={"agent_id": agent_id})
 
     def watch(self, tickers=None, agent_id=None, interval=60):
         """Watch tickers for real-time verification changes via SSE.

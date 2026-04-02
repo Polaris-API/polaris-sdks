@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { PolarisClient } from "polaris-news-api";
+import { VeroqClient } from "@veroq/sdk";
 
 export const veroqTickerResolve = (options: { apiKey?: string } = {}) =>
   tool({
@@ -14,7 +14,7 @@ export const veroqTickerResolve = (options: { apiKey?: string } = {}) =>
         ),
     }),
     execute: async ({ q }) => {
-      const client = new PolarisClient({ apiKey: options.apiKey });
+      const client = new VeroqClient({ apiKey: options.apiKey });
       const symbols = q.split(",").map((s) => s.trim());
       return client.tickerResolve(symbols);
     },

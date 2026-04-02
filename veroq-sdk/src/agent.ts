@@ -62,7 +62,7 @@ export class Agent {
 
   constructor(options: AgentOptions = {}) {
     this.apiKey = options.apiKey || process.env.VEROQ_API_KEY || process.env.POLARIS_API_KEY || '';
-    this.baseUrl = (options.baseUrl || 'https://api.thepolarisreport.com').replace(/\/$/, '');
+    this.baseUrl = (options.baseUrl || 'https://api.veroq.ai').replace(/\/$/, '');
     this.timeout = options.timeout || 30_000;
   }
 

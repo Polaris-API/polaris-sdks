@@ -16,7 +16,19 @@ Usage:
 
     # With config
     result = shield(text, agent_id="my-bot", block_if_untrusted=True)
+
+    # Cached shield for offline-first / high-volume pipelines
+    from veroq import CachedShield
+    cached = CachedShield(max_cache=500, ttl_seconds=3600)
+    result = cached("NVIDIA reported $22B in Q4 revenue")  # API call
+    result = cached("NVIDIA reported $22B in Q4 revenue")  # instant cache hit
+    print(cached.stats())  # {'hits': 1, 'misses': 1, 'hit_rate': 0.5, 'size': 1}
 """
+
+import hashlib
+import threading
+import time
+from collections import OrderedDict
 
 from .client import VeroqClient
 
@@ -165,3 +177,149 @@ def shield(text, source=None, agent_id=None, max_claims=5, api_key=None, base_ur
         )
 
     return result
+
+
+class CachedShield:
+    """Lightweight shield with local caching for repeated verifications.
+
+    Caches results by SHA-256 hash of text. Reduces API calls for repeated or
+    similar content. Useful for high-volume pipelines or edge/offline scenarios.
+
+    Args:
+        max_cache: Maximum entries in the LRU cache (default 500).
+        ttl_seconds: Time-to-live for cached results in seconds (default 3600).
+        api_key: Optional API key override.
+        base_url: Optional API base URL override.
+
+    Example::
+
+        from veroq import CachedShield
+
+        cached = CachedShield(max_cache=1000, ttl_seconds=1800)
+        result = cached("NVIDIA reported $22B in Q4 revenue")   # API call
+        result = cached("NVIDIA reported $22B in Q4 revenue")   # instant cache hit
+        print(cached.stats())
+        # {'hits': 1, 'misses': 1, 'hit_rate': 0.5, 'size': 1}
+    """
+
+    def __init__(self, max_cache=500, ttl_seconds=3600, api_key=None, base_url=None):
+        self._max_cache = max(1, max_cache)
+        self._ttl_seconds = max(1, ttl_seconds)
+        self._api_key = api_key
+        self._base_url = base_url
+        self._cache = OrderedDict()  # hash -> (ShieldResult, timestamp)
+        self._in_flight = {}  # hash -> threading.Event (dedup concurrent calls for same text)
+        self._hits = 0
+        self._misses = 0
+        self._lock = threading.Lock()
+        self._last_evict = 0  # monotonic timestamp of last expired-entry eviction
+
+    @staticmethod
+    def _hash_text(text):
+        """SHA-256 hash of the text, used as cache key."""
+        return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+    def _evict_expired(self):
+        """Remove entries older than TTL. Must be called under lock."""
+        now = time.monotonic()
+        expired = [k for k, (_, ts) in self._cache.items() if now - ts > self._ttl_seconds]
+        for k in expired:
+            del self._cache[k]
+
+    def _evict_lru(self):
+        """Remove oldest entries until at max_cache. Must be called under lock."""
+        while len(self._cache) > self._max_cache:
+            self._cache.popitem(last=False)
+
+    def __call__(self, text, **kwargs):
+        """Verify text using cached shield.
+
+        Checks local cache first (by SHA-256 of text). On miss, calls the
+        regular shield() function and stores the result. Deduplicates
+        concurrent API calls for identical text.
+
+        Args:
+            text: The LLM output to verify.
+            **kwargs: Passed to shield() on cache miss (source, agent_id, etc.).
+
+        Returns:
+            ShieldResult (from cache on hit, from API on miss).
+        """
+        key = self._hash_text(text)
+
+        with self._lock:
+            # Amortize TTL eviction — run at most once per second
+            now = time.monotonic()
+            if now - self._last_evict > 1.0:
+                self._evict_expired()
+                self._last_evict = now
+
+            if key in self._cache:
+                result, _ = self._cache[key]
+                self._cache.move_to_end(key)
+                self._hits += 1
+                return result
+
+            # Check if another thread is already fetching this key
+            if key in self._in_flight:
+                event = self._in_flight[key]
+                # Wait outside the lock for the other thread to finish
+                self._lock.release()
+                try:
+                    event.wait(timeout=30)
+                finally:
+                    self._lock.acquire()
+                # Re-check cache after waiting
+                if key in self._cache:
+                    result, _ = self._cache[key]
+                    self._cache.move_to_end(key)
+                    self._hits += 1
+                    return result
+                # Timed out or other thread failed — fall through to make own API call
+
+            # Mark this key as in-flight
+            event = threading.Event()
+            self._in_flight[key] = event
+            self._misses += 1
+
+        # Call API outside the lock
+        try:
+            result = shield(
+                text,
+                api_key=self._api_key,
+                base_url=self._base_url,
+                **kwargs,
+            )
+
+            with self._lock:
+                self._cache[key] = (result, time.monotonic())
+                self._evict_lru()
+
+            return result
+        finally:
+            with self._lock:
+                self._in_flight.pop(key, None)
+                event.set()
+
+    def stats(self):
+        """Return cache hit/miss statistics.
+
+        Returns:
+            dict with keys: hits, misses, hit_rate, size.
+        """
+        with self._lock:
+            total = self._hits + self._misses
+            return {
+                "hits": self._hits,
+                "misses": self._misses,
+                "hit_rate": self._hits / total if total > 0 else 0.0,
+                "size": len(self._cache),
+            }
+
+    def clear(self):
+        """Clear the cache and reset stats."""
+        with self._lock:
+            self._cache.clear()
+            self._in_flight.clear()
+            self._hits = 0
+            self._misses = 0

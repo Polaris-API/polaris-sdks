@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { PolarisClient } from "polaris-news-api";
+import { VeroqClient } from "@veroq/sdk";
 
 export const veroqGenerateReport = (options: { apiKey?: string } = {}) =>
   tool({
@@ -14,7 +14,7 @@ export const veroqGenerateReport = (options: { apiKey?: string } = {}) =>
         .describe("Report tier — 'quick' for a fast summary or 'deep' for full analysis (default 'quick')"),
     }),
     execute: async ({ ticker, tier }) => {
-      const client = new PolarisClient({ apiKey: options.apiKey });
+      const client = new VeroqClient({ apiKey: options.apiKey });
       return client.generateReport(ticker, tier);
     },
   });

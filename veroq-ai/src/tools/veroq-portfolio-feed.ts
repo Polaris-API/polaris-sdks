@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { PolarisClient } from "polaris-news-api";
+import { VeroqClient } from "@veroq/sdk";
 
 export const veroqPortfolioFeed = (options: { apiKey?: string } = {}) =>
   tool({
@@ -26,7 +26,7 @@ export const veroqPortfolioFeed = (options: { apiKey?: string } = {}) =>
         .describe("Max briefs to return (default 20)"),
     }),
     execute: async ({ holdings, days, limit }) => {
-      const client = new PolarisClient({ apiKey: options.apiKey });
+      const client = new VeroqClient({ apiKey: options.apiKey });
       return client.portfolioFeed(holdings, { days, limit });
     },
   });

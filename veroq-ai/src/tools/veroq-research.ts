@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { PolarisClient } from "polaris-news-api";
+import { VeroqClient } from "@veroq/sdk";
 
 export const veroqResearch = (options: { apiKey?: string } = {}) =>
   tool({
@@ -18,7 +18,7 @@ export const veroqResearch = (options: { apiKey?: string } = {}) =>
         .describe("Maximum briefs to analyze (1-50, default 20)"),
     }),
     execute: async ({ query, category, maxSources }) => {
-      const client = new PolarisClient({ apiKey: options.apiKey });
+      const client = new VeroqClient({ apiKey: options.apiKey });
       return client.research(query, { category, maxSources });
     },
   });

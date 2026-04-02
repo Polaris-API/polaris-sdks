@@ -3,7 +3,7 @@ import { ICredentialType, INodeProperties } from 'n8n-workflow';
 export class VeroqApi implements ICredentialType {
   name = 'veroqApi';
   displayName = 'VEROQ API';
-  documentationUrl = 'https://veroq.co/docs';
+  documentationUrl = 'https://veroq.ai/docs';
 
   properties: INodeProperties[] = [
     {

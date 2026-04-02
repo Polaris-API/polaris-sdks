@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { PolarisClient } from "polaris-news-api";
+import { VeroqClient } from "@veroq/sdk";
 
 export const veroqGetReport = (options: { apiKey?: string } = {}) =>
   tool({
@@ -10,7 +10,7 @@ export const veroqGetReport = (options: { apiKey?: string } = {}) =>
       reportId: z.string().describe("The report ID to retrieve"),
     }),
     execute: async ({ reportId }) => {
-      const client = new PolarisClient({ apiKey: options.apiKey });
+      const client = new VeroqClient({ apiKey: options.apiKey });
       return client.getReport(reportId);
     },
   });

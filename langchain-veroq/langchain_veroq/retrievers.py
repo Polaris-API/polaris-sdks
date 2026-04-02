@@ -4,7 +4,7 @@ from typing import List, Optional
 from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever
 
-from polaris_news import PolarisClient
+from veroq import VeroqClient
 
 
 def _resolve_api_key(api_key: str = "") -> str:
@@ -25,7 +25,7 @@ class PolarisRetriever(BaseRetriever):
     exclude_sources: Optional[str] = None
 
     def _get_relevant_documents(self, query: str, **kwargs) -> List[Document]:
-        client = PolarisClient(api_key=_resolve_api_key(self.api_key))
+        client = VeroqClient(api_key=_resolve_api_key(self.api_key))
         search_kwargs = {}
         if self.category is not None:
             search_kwargs["category"] = self.category

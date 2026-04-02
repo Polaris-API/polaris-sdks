@@ -1,5 +1,7 @@
 # @veroq/ai
 
+> Verified AI. One function call.
+
 > **New:** VeroQ 2.0 adds Verified Swarm (multi-agent pipelines), Agent Runtime (finance/legal/research/compliance verticals), and secure external MCP integration. Available via the [MCP server](https://www.npmjs.com/package/veroq-mcp) and [SDKs](https://veroq.ai/docs).
 
 VEROQ tools for the [Vercel AI SDK](https://sdk.vercel.ai). Drop verified financial intelligence into any AI SDK agent with one line.
@@ -41,7 +43,7 @@ const result = await generateText({
 });
 ```
 
-Set the `POLARIS_API_KEY` environment variable to skip passing `apiKey` everywhere.
+Set the `VEROQ_API_KEY` environment variable to skip passing `apiKey` everywhere.
 
 ## Tools
 

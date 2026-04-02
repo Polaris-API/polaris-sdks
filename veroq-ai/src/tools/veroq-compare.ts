@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { PolarisClient } from "polaris-news-api";
+import { VeroqClient } from "@veroq/sdk";
 
 export const veroqCompare = (options: { apiKey?: string } = {}) =>
   tool({
@@ -12,7 +12,7 @@ export const veroqCompare = (options: { apiKey?: string } = {}) =>
         .describe("The brief ID to compare source coverage for"),
     }),
     execute: async ({ briefId }) => {
-      const client = new PolarisClient({ apiKey: options.apiKey });
+      const client = new VeroqClient({ apiKey: options.apiKey });
       return client.compareSources(briefId);
     },
   });
